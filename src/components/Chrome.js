@@ -22,11 +22,14 @@ export default function Chrome ({ children }) {
           </div>
           <div className='lg:flex flex-grow items-center' id='example-navbar-warning'>
             <ul className='flex flex-col lg:flex-row list-none ml-auto'>
-              <li className='nav-item'>
-                <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/about'>
-                About
-                </Link>
-              </li>
+              { user.email
+                ? (
+                  <li className='nav-item'>
+                    <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/'>
+                      My Ballot
+                    </Link>
+                  </li>
+                ) : null }
               { user.email
                 ? (
                   <li className='nav-item'>
