@@ -1,0 +1,33 @@
+{
+  "groups": {
+    "2021": {
+      "0": {
+        "id": "best-picture",
+        "name": "Best Picture",
+        "candidates": {
+          "0": { "text": "Nomadland", "subtext": "" },
+          "1": { "text": "The Trial of the Chicago 7", "subtext": "" },
+          "2": { "text": "Minari", "subtext": "" },
+          "3": { "text": "Mank", "subtext": "" },
+          "4": { "text": "One Night in Miami", "subtext": "" }
+        }
+      },
+      "1": {
+        "id": "best-director",
+        "name": "Best Director",
+        "candidates": {
+          "0": { "text": "Chloé Zhao", "subtext": "Nomadland" },
+          "1": { "text": "David Fincher", "subtext": "Mank" }
+        }
+      },
+      "2": {
+        "id": "best-actor",
+        "name": "Best Actor in a Leading Role",
+        "candidates": {
+          "0": { "text": "Chadwick Boseman", "subtext": "Ma Rainey's Black Bottom" },
+          "1": { "text": "Anthony Hopkins", "subtext": "The Father" }
+        }
+      }
+    }
+  }
+}
