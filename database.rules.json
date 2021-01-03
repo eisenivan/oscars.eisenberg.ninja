@@ -1,7 +1,29 @@
 {
-  /* Visit https://firebase.google.com/docs/database/security to learn more about security rules. */
   "rules": {
-    ".read": false,
-    ".write": false
+    "ballots": {
+      "2021": {
+        "$uid": {
+          ".write": "root.child('settings/2021/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null"
+        },
+        ".read": "auth.uid !== null"
+      }
+    },
+    "scores": {
+      "$uid": {
+        ".write": "$uid === auth.uid",
+        ".read": "auth.uid !== null"
+      }
+    },
+    "settings": {
+      ".write": "root.child('admins').child(auth.uid).exists() === true",
+      ".read": true
+    },
+    "groups": {
+      "2021": {
+        ".read": true,
+        ".write": false
+      }
+    }
   }
 }

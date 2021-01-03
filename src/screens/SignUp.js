@@ -6,20 +6,8 @@ async function login (e) {
   e.preventDefault()
   const { email, password } = e.target.elements
   try {
-    await auth().signInWithEmailAndPassword(email.value, password.value)
-    window.location.href = '/'
-  } catch (error) {
-    console.warn(error)
-  }
-}
-
-async function resetPassword (e) {
-  e.preventDefault()
-  const { email } = e.target.elements
-
-  try {
-    await auth().sendPasswordResetEmail(email.value)
-    window.location.href = '/'
+    await auth().createUserWithEmailAndPassword(email.value, password.value)
+    window.location.href = '/profile'
   } catch (error) {
     console.warn(error)
   }
@@ -44,28 +32,14 @@ function App () {
               <input className={`w-full p-2 mb-6 text-${mainColor}-700 border-b-2 border-${mainColor}-500 outline-none focus:bg-gray-300`} type='password' name='password' />
             </div>
             <div>
-              <button type='submit' className={`block text-center bg-${mainColor}-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto`}>Login</button>
+              <button type='submit' className={`block text-center bg-${mainColor}-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto`}>Register</button>
             </div>
             <div>
-              <button className='block text-center mx-auto text-sm' onClick={() => setIsResetting(true)}>Forgot Password?</button>
+              <button className='block text-center mx-auto text-sm' onClick={() => setIsResetting(true)}>Login?</button>
             </div>
           </form>
         )
-        : (
-          <form onSubmit={resetPassword}>
-            <div>
-              <label className={`block mb-2 text-${mainColor}-500`} htmlFor='email'>Email</label>
-              <input className={`w-full p-2 mb-6 text-${mainColor}-700 border-b-2 border-${mainColor}-500 outline-none focus:bg-gray-300`} type='text' name='email' />
-            </div>
-            <div>
-              <button type='submit' className={`block text-center bg-${mainColor}-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto`}>Reset Password</button>
-            </div>
-            <div>
-              <button className='block text-center mx-auto text-sm' onClick={() => setIsResetting(false)}>Login</button>
-            </div>
-          </form>
-        )
-      }
+        : null }
 
     </div>
   )

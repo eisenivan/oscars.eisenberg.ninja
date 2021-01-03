@@ -1,8 +1,10 @@
 import { useAuth, userContext } from './services/auth'
 import Login from './screens/Login'
+import SignUp from './screens/SignUp'
 import Profile from './screens/Profile'
-import Home from './screens/Home'
-import About from './screens/About'
+import Ballot from './screens/Ballot'
+import ScoreBoard from './screens/Scoreboard'
+import Admin from './screens/Admin'
 import Chrome from './components/Chrome'
 import {
   BrowserRouter as Router,
@@ -28,19 +30,19 @@ function App () {
     return (
       <Router>
         <Switch>
-          <Route path='/about'>
-            <Chrome>
-              <About />
-            </Chrome>
-          </Route>
           <Route path='/login'>
             <Chrome>
               <Login />
             </Chrome>
           </Route>
+          <Route path='/register'>
+            <Chrome>
+              <SignUp />
+            </Chrome>
+          </Route>
           <Route path='/'>
             <Chrome>
-              <Home />
+              <Login />
             </Chrome>
           </Route>
         </Switch>
@@ -52,11 +54,6 @@ function App () {
     <userContext.Provider value={{ user }}>
       <Router>
         <Switch>
-          <Route path='/about'>
-            <Chrome>
-              <About />
-            </Chrome>
-          </Route>
           <Route path='/profile'>
             <Chrome>
               <Profile />
@@ -67,9 +64,19 @@ function App () {
               <Login />
             </Chrome>
           </Route>
+          <Route path='/scoreboard'>
+            <Chrome>
+              <ScoreBoard />
+            </Chrome>
+          </Route>
+          <Route path='/admin/:id'>
+            <Chrome>
+              <Admin />
+            </Chrome>
+          </Route>
           <Route path='/'>
             <Chrome>
-              <Home />
+              <Ballot />
             </Chrome>
           </Route>
         </Switch>

@@ -26,7 +26,7 @@ function App () {
       </header>
       <form onSubmit={(e) => updateProfile(e, user)}>
         <div>
-          <label className={`block mb-2 text-${mainColor}-500`} htmlFor='email'>Stage Name</label>
+          <label className={`block mb-2 text-${mainColor}-500`} htmlFor='email'>Display Name</label>
           <input defaultValue={user.displayName} className={`w-full p-2 mb-6 text-${mainColor}-700 border-b-2 border-${mainColor}-500 outline-none focus:bg-gray-300`} type='text' name='displayName' />
         </div>
         <div>
