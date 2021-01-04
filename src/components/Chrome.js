@@ -1,6 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { mainColor } from '../variables'
+import { NavLink, Link } from 'react-router-dom'
 import { useSession, auth } from '../services/auth'
 
 export default function Chrome ({ children }) {
@@ -8,7 +7,7 @@ export default function Chrome ({ children }) {
 
   return (
     <>
-      <nav className={`relative flex flex-wrap items-center justify-between px-2 navbar-expand-lg bg-${mainColor}-700 sm:mb-2 md:mb-6`}>
+      <nav className={`relative flex flex-wrap items-center justify-between px-2 navbar-expand-lg bg-blue-700 sm:mb-2 md:mb-6`}>
         <div className='container mx-auto flex flex-wrap items-center justify-between'>
           <div className='w-full relative flex justify-between lg:w-auto px-4 lg:static lg:block lg:justify-start'>
             <Link className='text-sm font-bold leading-relaxed inline-block mr-4 whitespace-no-wrap uppercase text-white' to='/'>
@@ -26,19 +25,19 @@ export default function Chrome ({ children }) {
                 ? (
                   <>
                     <li>
-                      <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/'>
+                      <NavLink exact className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/'>
                         My Ballot
-                      </Link>
+                      </NavLink>
                     </li>
                     <li>
-                      <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/scoreboard'>
+                      <NavLink exact className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/scoreboard'>
                         Scoreboard
-                      </Link>
+                      </NavLink>
                     </li>
                     <li>
-                      <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/profile'>
+                      <NavLink exact className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/profile'>
                         Profile
-                      </Link>
+                      </NavLink>
                     </li>
                     <li>
                       <button onClick={() => auth().signOut()} className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75'>Logout</button>
@@ -47,12 +46,12 @@ export default function Chrome ({ children }) {
                 ) : (
                   <>
                     <li>
-                      <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/login'>Login</Link>
+                      <NavLink className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/login'>Login</NavLink>
                     </li>
                     <li>
-                      <Link className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/register'>
+                      <NavLink className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/register'>
                         Register
-                      </Link>
+                      </NavLink>
                     </li>
                   </>
                 ) }

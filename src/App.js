@@ -74,7 +74,7 @@ function App () {
               <Admin />
             </Chrome>
           </Route>
-          <Route path='/'>
+          <Route exact path='/'>
             <Chrome>
               <Ballot />
             </Chrome>
