@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useSession, auth } from '../services/auth'
 
 export default function Chrome ({ children }) {
   const user = useSession() || {}
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <>
@@ -13,13 +14,13 @@ export default function Chrome ({ children }) {
             <Link className='text-sm font-bold leading-relaxed inline-block mr-4 whitespace-no-wrap uppercase text-white' to='/'>
               <h1>oscars // eisenberg // ninja</h1>
             </Link>
-            <button className='cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none' type='button'>
+            <button onClick={() => setMenuOpen(!menuOpen)} className='cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none' type='button'>
               <span className='block relative w-6 h-px rounded-sm bg-white' />
               <span className='block relative w-6 h-px rounded-sm bg-white mt-1' />
               <span className='block relative w-6 h-px rounded-sm bg-white mt-1' />
             </button>
           </div>
-          <div className='lg:flex flex-grow items-center' id='example-navbar-warning'>
+          <div className={`lg:flex flex-grow items-center ${!menuOpen ? 'hidden sm:hidden lg:block' : ''}`} id='example-navbar-warning'>
             <ul className='flex flex-col lg:flex-row list-none ml-auto'>
               { user.email
                 ? (
