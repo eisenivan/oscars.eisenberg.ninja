@@ -7,7 +7,7 @@ function Ballot () {
   const user = useSession() || {}
   const [categories, setCategories] = useState([])
   const [ballot, setBallot] = useState([])
-  const [locked, setLocked] = useState(true)
+  const [locked, setLocked] = useState(false)
   let [results, setResults] = useState([])
 
   useEffect(() => {

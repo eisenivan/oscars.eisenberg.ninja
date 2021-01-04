@@ -1,14 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { auth } from '../services/auth'
+import Loader from '../components/Loader'
 
-async function updateProfile (e, user) {
+async function updateProfile (e, user, setLoading) {
   e.preventDefault()
+  setLoading(true)
   const { displayName, email } = e.target.elements
-  user.updateProfile({
+  await user.updateProfile({
     displayName: displayName.value
   })
 
-  user.updateEmail(email.value)
+  await user.updateEmail(email.value)
+  setLoading(false)
 }
 
 async function sendPasswordResetEmail (user) {
@@ -18,14 +21,23 @@ async function sendPasswordResetEmail (user) {
 
 function App () {
   const user = auth().currentUser
+  const [loading, setLoading] = useState(false)
+
+  if (!user.displayName) {
+    user.updateProfile({
+      displayName: user.email
+    })
+  }
+
   return (
-    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 rounded p-5`}>
+    <div className={`w-full mt-2 max-w-sm m-auto bg-blue-100 rounded p-5`}>
       <header>
         <img alt='tiger icon' className='w-20 mx-auto mb-5' src='https://img.icons8.com/fluent/344/year-of-tiger.png' />
       </header>
-      <form onSubmit={(e) => updateProfile(e, user)}>
+      <form onSubmit={(e) => updateProfile(e, user, setLoading)}>
         <div>
-          <label className={`block mb-2 text-blue-500`} htmlFor='email'>Display Name</label>
+          <label className={`block text-blue-500`} htmlFor='email'>Display Name</label>
+          <div className='text-xs mb-2 text-black-100 italic'>This will be the name that shows up on the leaderboard. Change this to your name.</div>
           <input defaultValue={user.displayName} className={`w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300`} type='text' name='displayName' />
         </div>
         <div>
@@ -33,7 +45,7 @@ function App () {
           <input defaultValue={user.email} className={`w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300`} type='text' name='email' />
         </div>
         <div>
-          <button type='submit' className={`block text-center bg-blue-700 hover:bg-indigo-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto`}>Update Profile</button>
+          <button type='submit' className={`block text-center bg-blue-700 hover:bg-indigo-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto w-max-md`}>{ loading ? <Loader color='#FFF' style={{ height: '20px' }} /> : 'Update Profile' }</button>
         </div>
       </form>
 

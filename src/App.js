@@ -6,6 +6,7 @@ import Ballot from './screens/Ballot'
 import ScoreBoard from './screens/Scoreboard'
 import Admin from './screens/Admin'
 import Chrome from './components/Chrome'
+import Loader from './components/Loader'
 import {
   BrowserRouter as Router,
   Switch,
@@ -20,7 +21,7 @@ function App () {
     return (
       <Router>
         <Chrome>
-          Loading...
+          <Loader />
         </Chrome>
       </Router>
     )

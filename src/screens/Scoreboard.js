@@ -1,16 +1,39 @@
 import React, { useEffect, useState } from 'react'
-import { db } from '../services/auth'
+import _sortBy from 'lodash.sortby'
+import { db, useSession } from '../services/auth'
+import Loader from '../components/Loader'
+
+function dynamicColor (index) {
+  switch (index) {
+    case 0:
+      return 'bg-blue-500'
+
+    case 1:
+      return 'bg-blue-400'
+
+    case 2:
+      return 'bg-blue-300'
+
+    case 3:
+      return 'bg-blue-200'
+
+    case 4:
+    default:
+      return 'bg-blue-100'
+  }
+}
 
 function Scoreboard () {
-  // const user = useSession() || {}
+  const user = useSession() || {}
   const [ballots, setBallots] = useState({})
   const [results, setResults] = useState([])
+  const [masterBallot, setMasterBallot] = useState({})
 
   useEffect(() => {
-    db.ref(`/ballots/2021`)
+    db.ref(`/groups/2021`)
       .once('value')
       .then((snapshot) => {
-        setBallots(snapshot.val() || {})
+        setMasterBallot(snapshot.val() || {})
       })
   }, [])
 
@@ -27,36 +50,58 @@ function Scoreboard () {
         setResults(snapshot.val().results)
       })
   }, [])
-  console.log(ballots)
 
-  let tempScores = []
   if (ballots) {
     Object.keys(ballots).forEach((key) => {
-      tempScores[key] = 0
+      ballots[key].score = 0
       results.forEach((winner) => {
         if (ballots[key].votes.indexOf(winner) > -1) {
-          tempScores[key] = tempScores[key] + 1
+          ballots[key].score = ballots[key].score + 1
         }
       })
     })
 
+    const ballotArray = Object.keys(ballots)
+      .map(key => ballots[key])
+
+    const sortedBallots = _sortBy(ballotArray, ['score', 'displayName']).reverse()
+
+    // Set ranks
+    const rankedSortedBallots = sortedBallots.reduce((acc, x, i) => {
+      let rank = i + 1
+      const lastBallot = acc[acc.length - 1]
+
+      if (lastBallot && x.score === lastBallot.score) {
+        rank = lastBallot.rank
+      }
+      return ([...acc, { ...x, rank }])
+    }, [])
+
     return (
-      <div>
-        {
-          Object.keys(ballots).map((key) => {
-            return (
-              <div>
-                <div>{ballots[key].displayName}: {tempScores[key]} / {results.length}</div>
-              </div>
-            )
-          })
-        }
-      </div>
+      <>
+        <div className='mx-auto max-w-lg text-center'>
+          <h1 className='text-3xl'>Leaderboard</h1>
+          <p className='text-xs mb-2'>{results.length} of {Object.keys(masterBallot).length} categories announced</p>
+        </div>
+        <div className='max-w-lg mx-auto border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md'>
+          {
+            rankedSortedBallots.map((x, place) => {
+              return (
+                <div key={x.displayName} className={`grid grid-cols-leaderboard gap-x-2 p-2 ${dynamicColor(place)}`}>
+                  <div className='bg-white rounded-full p-0.5 rotate-12 font-black text-center'>#{x.rank}</div>
+                  <div className={`flex items-center ${user.displayName === x.displayName ? 'font-bold italic' : ''}`}>{x.displayName}</div>
+                  <div className='flex items-center font-black text-right'>{x.score}</div>
+                </div>
+              )
+            })
+          }
+        </div>
+      </>
     )
   }
 
   return (
-    <div>Loading...</div>
+    <Loader />
   )
 }
 

@@ -11,9 +11,13 @@ function AdminScreen () {
 
   function updateLocked (e) {
     const value = e.target.checked
-    db.ref(`settings/${id}/locked`).set(!!value).then(() => {
-      setLocked(value)
-    })
+    try {
+      db.ref(`settings/${id}/locked`).set(!!value).then(() => {
+        setLocked(value)
+      })
+    } catch (e) {
+      console.warn(e)
+    }
   }
 
   useEffect(() => {
