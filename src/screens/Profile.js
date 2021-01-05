@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { auth } from '../services/auth'
 import Loader from '../components/Loader'
+import PageHeading from '../components/PageHeading'
 
 async function updateProfile (e, user, setLoading) {
   e.preventDefault()
@@ -11,6 +12,7 @@ async function updateProfile (e, user, setLoading) {
   })
 
   await user.updateEmail(email.value)
+  window.location.href = '/'
   setLoading(false)
 }
 
@@ -30,9 +32,11 @@ function App () {
   }
 
   return (
-    <div className={`w-full mt-2 max-w-sm m-auto bg-blue-100 rounded p-5`}>
+    <div className={`w-full mt-2 max-w-sm m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md`}>
       <header>
-        <img alt='tiger icon' className='w-20 mx-auto mb-5' src='https://img.icons8.com/fluent/344/year-of-tiger.png' />
+        <div className='mx-auto text-center mb-5'>
+          <PageHeading>Your Profile</PageHeading>
+        </div>
       </header>
       <form onSubmit={(e) => updateProfile(e, user, setLoading)}>
         <div>

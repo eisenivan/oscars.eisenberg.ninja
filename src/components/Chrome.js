@@ -2,6 +2,14 @@ import React, { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useSession, auth } from '../services/auth'
 
+function NavItem ({ children, to, exact = false }) {
+  return (
+    <NavLink exact={exact} className='bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to={to}>
+      {children}
+    </NavLink>
+  )
+}
+
 export default function Chrome ({ children }) {
   const user = useSession() || {}
   const [menuOpen, setMenuOpen] = useState(false)
@@ -10,7 +18,7 @@ export default function Chrome ({ children }) {
     <>
       <nav className={`relative flex flex-wrap items-center justify-between px-2 navbar-expand-lg bg-blue-700 sm:mb-2 md:mb-6`}>
         <div className='container mx-auto flex flex-wrap items-center justify-between'>
-          <div className='w-full relative flex justify-between lg:w-auto px-4 lg:static lg:block lg:justify-start'>
+          <div className='w-full relative flex justify-between lg:w-auto lg:px-4 lg:static lg:block lg:justify-start'>
             <Link className='text-sm font-bold leading-relaxed inline-block mr-4 whitespace-no-wrap uppercase text-white' to='/'>
               <h1>oscars // eisenberg // ninja</h1>
             </Link>
@@ -26,33 +34,33 @@ export default function Chrome ({ children }) {
                 ? (
                   <>
                     <li>
-                      <NavLink exact className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/'>
+                      <NavItem exact to='/'>
                         My Ballot
-                      </NavLink>
+                      </NavItem>
                     </li>
                     <li>
-                      <NavLink exact className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/scoreboard'>
-                        Scoreboard
-                      </NavLink>
+                      <NavItem exact to='/scoreboard'>
+                        Leaderboard
+                      </NavItem>
                     </li>
                     <li>
-                      <NavLink exact className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/profile'>
+                      <NavItem exact to='/profile'>
                         Profile
-                      </NavLink>
+                      </NavItem>
                     </li>
                     <li>
-                      <button onClick={() => auth().signOut()} className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75'>Logout</button>
+                      <button className='bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' onClick={() => auth().signOut()}>Logout</button>
                     </li>
                   </>
                 ) : (
                   <>
                     <li>
-                      <NavLink className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/login'>Login</NavLink>
+                      <NavItem to='/login'>Login</NavItem>
                     </li>
                     <li>
-                      <NavLink className='px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75' to='/register'>
+                      <NavItem to='/register'>
                         Register
-                      </NavLink>
+                      </NavItem>
                     </li>
                   </>
                 ) }
@@ -61,7 +69,7 @@ export default function Chrome ({ children }) {
         </div>
       </nav>
 
-      <div className='container mx-auto px-4'>
+      <div className='container mx-auto mt-4 px-4'>
         {children}
       </div>
     </>

@@ -43,7 +43,7 @@ function App () {
           </Route>
           <Route path='/'>
             <Chrome>
-              <Login />
+              <SignUp />
             </Chrome>
           </Route>
         </Switch>

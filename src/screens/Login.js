@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { auth } from '../services/auth'
+import PageHeading from '../components/PageHeading'
 
 async function login (e) {
   e.preventDefault()
@@ -27,10 +29,10 @@ async function resetPassword (e) {
 function App () {
   const [isResetting, setIsResetting] = useState(false)
   return (
-    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 rounded p-5`}>
-      <header>
-        <img alt='tiger icon' className='w-20 mx-auto mb-5' src='https://img.icons8.com/fluent/344/year-of-tiger.png' />
-      </header>
+    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md`}>
+      <div className='mx-auto text-center mb-5'>
+        <PageHeading>Login</PageHeading>
+      </div>
       { !isResetting
         ? (
           <form onSubmit={login}>
@@ -45,8 +47,12 @@ function App () {
             <div>
               <button type='submit' className={`block text-center bg-blue-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto`}>Login</button>
             </div>
+            <div className='mb-3'>
+              <p className='text-xs italic text-center'>Don't have an account?</p>
+              <Link to='/register' className='block text-center mx-auto text-xs underline'>Register</Link>
+            </div>
             <div>
-              <button className='block text-center mx-auto text-sm' onClick={() => setIsResetting(true)}>Forgot Password?</button>
+              <button className='block text-center mx-auto text-xs underline' onClick={() => setIsResetting(true)}>Forgot Password?</button>
             </div>
           </form>
         )
@@ -59,8 +65,12 @@ function App () {
             <div>
               <button type='submit' className={`block text-center bg-blue-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto`}>Reset Password</button>
             </div>
+            <div className='mb-3'>
+              <p className='text-xs italic text-center'>Don't have an account?</p>
+              <Link to='/register' className='block text-center mx-auto text-xs underline'>Register</Link>
+            </div>
             <div>
-              <button className='block text-center mx-auto text-sm' onClick={() => setIsResetting(false)}>Login</button>
+              <button className='block text-center mx-auto text-xs underline' onClick={() => setIsResetting(false)}>Return to Login</button>
             </div>
           </form>
         )

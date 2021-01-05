@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import _sortBy from 'lodash.sortby'
 import { db, useSession } from '../services/auth'
 import Loader from '../components/Loader'
+import PageHeading from '../components/PageHeading'
 
 function dynamicColor (index) {
   switch (index) {
@@ -28,6 +29,7 @@ function Scoreboard () {
   const [ballots, setBallots] = useState({})
   const [results, setResults] = useState([])
   const [masterBallot, setMasterBallot] = useState({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     db.ref(`/groups/2021`)
@@ -41,6 +43,7 @@ function Scoreboard () {
     db.ref(`/ballots/2021`)
       .on('value', (snapshot) => {
         setBallots(snapshot.val() || {})
+        setLoading(false)
       })
   }, [])
 
@@ -51,7 +54,7 @@ function Scoreboard () {
       })
   }, [])
 
-  if (ballots) {
+  if (!loading) {
     Object.keys(ballots).forEach((key) => {
       ballots[key].score = 0
       results.forEach((winner) => {
@@ -80,7 +83,7 @@ function Scoreboard () {
     return (
       <>
         <div className='mx-auto max-w-lg text-center'>
-          <h1 className='text-3xl'>Leaderboard</h1>
+          <PageHeading>Leaderboard</PageHeading>
           <p className='text-xs mb-2'>{results.length} of {Object.keys(masterBallot).length} categories announced</p>
         </div>
         <div className='max-w-lg mx-auto border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md'>
