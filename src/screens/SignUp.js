@@ -16,7 +16,7 @@ async function login (e) {
 
 function SignUp () {
   return (
-    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 border-blue-700 p-5 border-8 rounded-sm border-opacity-10 shadow-md`}>
+    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 border-blue-700 p-5 border-8 rounded-sm border-opacity-10 shadow-sm`}>
       <header className='mx-auto text-center mb-5'>
         <PageHeading>Create an Account</PageHeading>
       </header>

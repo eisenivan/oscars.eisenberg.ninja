@@ -7,18 +7,23 @@ import PageHeading from '../components/PageHeading'
 function dynamicColor (index) {
   switch (index) {
     case 0:
-      return 'bg-blue-500'
+      return 'bg-blue-600'
 
     case 1:
-      return 'bg-blue-400'
+      return 'bg-blue-500'
 
     case 2:
-      return 'bg-blue-300'
+      return 'bg-blue-400'
 
     case 3:
-      return 'bg-blue-200'
+      return 'bg-blue-300'
 
     case 4:
+      return 'bg-blue-300'
+
+    case 5:
+      return 'bg-blue-200'
+
     default:
       return 'bg-blue-100'
   }
@@ -86,11 +91,11 @@ function Scoreboard () {
           <PageHeading>Leaderboard</PageHeading>
           <p className='text-xs mb-2'>{results.length} of {Object.keys(masterBallot).length} categories announced</p>
         </div>
-        <div className='max-w-lg mx-auto border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md'>
+        <div className='max-w-lg mx-auto border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm'>
           {
             rankedSortedBallots.map((x, place) => {
               return (
-                <div key={x.displayName} className={`grid grid-cols-leaderboard gap-x-2 p-2 ${dynamicColor(place)}`}>
+                <div key={x.displayName} className={`grid grid-cols-leaderboard gap-x-2 p-2 ${dynamicColor(x.rank)} ${user.displayName === x.displayName ? 'transform scale-105 shadow-lg' : ''}`}>
                   <div className='bg-white rounded-full p-0.5 rotate-12 font-black text-center'>#{x.rank}</div>
                   <div className={`flex items-center ${user.displayName === x.displayName ? 'font-bold italic' : ''}`}>{x.displayName}</div>
                   <div className='flex items-center font-black text-right'>{x.score}</div>

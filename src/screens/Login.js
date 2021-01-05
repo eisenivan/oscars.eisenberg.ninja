@@ -29,7 +29,7 @@ async function resetPassword (e) {
 function App () {
   const [isResetting, setIsResetting] = useState(false)
   return (
-    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md`}>
+    <div className={`w-full mt-2 max-w-xs m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm`}>
       <div className='mx-auto text-center mb-5'>
         <PageHeading>Login</PageHeading>
       </div>

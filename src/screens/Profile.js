@@ -32,7 +32,7 @@ function App () {
   }
 
   return (
-    <div className={`w-full mt-2 max-w-sm m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-md`}>
+    <div className={`w-full mt-2 max-w-sm m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm`}>
       <header>
         <div className='mx-auto text-center mb-5'>
           <PageHeading>Your Profile</PageHeading>

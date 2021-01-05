@@ -72,13 +72,13 @@ function Ballot () {
     return (
       <div>
         <PageHeading>
-          Your Ballot
+          My Ballot
           { locked && results ? (
             <span className='ml-2 text-sm'>Score: {tempScore}/{results.length}</span>
           ) : null }
         </PageHeading>
 
-        <div className='mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3'>
+        <div className='mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm p-4 bg-blue-100'>
           {
             categories.map((cat) => {
               let resultClass = ''
@@ -100,14 +100,14 @@ function Ballot () {
 
               return (
                 <div className={`mb-6`} key={cat.id}>
-                  <h2 className='text-xl lg:text-2xl mb-2'>{cat.name} <i className={resultClass}>{resultSymbol}</i></h2>
+                  <h2 className='text-md font-semibold mb-2 uppercase'>{cat.name} <i className={resultClass}>{resultSymbol}</i></h2>
                   { cat.candidates.map(candidate => {
                     const key = `${cat.id}__${keyFromName(candidate.text)}`
                     return (
                       <label className={`border-solid block pl-2 ml-2 border-l border-indigo-200 ${results.indexOf(key) > -1 ? resultClass : ''}`} key={key} htmlFor={key}>
                         <input disabled={locked} onChange={updateBallot} checked={isSelected(ballot, key)} className='mr-2' type='radio' name={cat.id} value={key} id={key} />
                         <span className=''>{candidate.text}</span>
-                        { candidate.subtext ? <span className='block ml-6 pb-2 font-thin text-xs italic'>{candidate.subtext}</span> : null }
+                        { candidate.subtext ? <span className='block ml-6 pb-2 font-light text-xs italic'>{candidate.subtext}</span> : null }
                       </label>
                     )
                   }) }
