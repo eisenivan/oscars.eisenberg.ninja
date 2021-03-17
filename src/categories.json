@@ -1,32 +1,259 @@
 {
-  "groups": {
-    "2021": {
-      "0": {
-        "id": "best-picture",
-        "name": "Best Picture",
-        "candidates": {
-          "0": { "text": "Nomadland", "subtext": "" },
-          "1": { "text": "The Trial of the Chicago 7", "subtext": "" },
-          "2": { "text": "Minari", "subtext": "" },
-          "3": { "text": "Mank", "subtext": "" },
-          "4": { "text": "One Night in Miami", "subtext": "" }
-        }
-      },
-      "1": {
-        "id": "best-director",
-        "name": "Best Director",
-        "candidates": {
-          "0": { "text": "Chloé Zhao", "subtext": "Nomadland" },
-          "1": { "text": "David Fincher", "subtext": "Mank" }
-        }
-      },
-      "2": {
-        "id": "best-actor",
-        "name": "Best Actor in a Leading Role",
-        "candidates": {
-          "0": { "text": "Chadwick Boseman", "subtext": "Ma Rainey's Black Bottom" },
-          "1": { "text": "Anthony Hopkins", "subtext": "The Father" }
-        }
+  "2021": {
+    "0": {
+      "id": "best-picture",
+      "name": "Best Picture",
+      "candidates": {
+        "0": { "text": "The Father", "subtext": "" },
+        "1": { "text": "Judas and the Black Messiah", "subtext": "" },
+        "2": { "text": "Mank", "subtext": "" },
+        "3": { "text": "Minari", "subtext": "" },
+        "4": { "text": "Nomadland", "subtext": "" },
+        "5": { "text": "Promising Young Woman", "subtext": "" },
+        "6": { "text": "Sound of Metal", "subtext": "" },
+        "7": { "text": "The Trial of the Chicago 7", "subtext": "" }
+      }
+    },
+    "1": {
+      "id": "best-supporting-actress",
+      "name": "Actress In A Supporting Role",
+      "candidates": {
+        "0": { "text": "Maria Bakalova", "subtext": "Borat Subsequent Moviefilm" },
+        "1": { "text": "Glenn Close", "subtext": "Hillbilly Elegy" },
+        "2": { "text": "Olivia Colman", "subtext": "The Father" },
+        "3": { "text": "Amanda Seyfried", "subtext": "Mank" },
+        "4": { "text": "Youn Yuh-jung", "subtext": "Minari" }
+      }
+    },
+    "2": {
+      "id": "best-supporting-actor",
+      "name": "Actor In A Supporting Role",
+      "candidates": {
+        "0": { "text": "Sacha Baron Cohen", "subtext": "The Trial of the Chicago 7" },
+        "1": { "text": "Daniel Kaluuya", "subtext": "Judas and the Black Messiah" },
+        "2": { "text": "Leslie Odom Jr.", "subtext": "One Night in Miami" },
+        "3": { "text": "Paul Raci", "subtext": "Sound of Metal" },
+        "4": { "text": "Lakeith Stanfield", "subtext": "Judas and the Black Messiah" }
+      }
+    },
+    "3": {
+      "id": "international-feature",
+      "name": "International Feature Film",
+      "candidates": {
+        "0": { "text": "Another Round", "subtext": "Denmark" },
+        "1": { "text": "Better Days", "subtext": "Hong Kong" },
+        "2": { "text": "Collective", "subtext": "Romania" },
+        "3": { "text": "The Man Who Sold His Skin", "subtext": "Tunisia" },
+        "4": { "text": "Qu Vadis, Aida?", "subtext": "Bosnia and Herzegovina" }
+      }
+    },
+    "4": {
+      "id": "doc-short",
+      "name": "Documentary (Short)",
+      "candidates": {
+        "0": { "text": "Colette", "subtext": "" },
+        "1": { "text": "A Concerto Is a Conversation", "subtext": "" },
+        "2": { "text": "Do Not Split", "subtext": "" },
+        "3": { "text": "Hunger Ward", "subtext": "" },
+        "4": { "text": "A Loureve Song For Latasha", "subtext": "" }
+      }
+    },
+    "5": {
+      "id": "doc-feature",
+      "name": "Documentary (Feature)",
+      "candidates": {
+        "0": { "text": "Collective", "subtext": "" },
+        "1": { "text": "Crip Camp", "subtext": "" },
+        "2": { "text": "The Mole Agent", "subtext": "" },
+        "3": { "text": "My Octopus Teacher", "subtext": "" },
+        "4": { "text": "Time", "subtext": "" }
+      }
+    },
+    "6": {
+      "id": "original-song",
+      "name": "Original Song",
+      "candidates": {
+        "0": { "text": "Fight For You", "subtext": "Judas and the Black Messiah" },
+        "1": { "text": "Hear My Voice", "subtext": "The Trial of the Chicago 7" },
+        "2": { "text": "Husavik", "subtext": "Eurovision Song Contest: The Story of Fire Saga" },
+        "3": { "text": "lo Sì (Seen)", "subtext": "The Life Ahead (La Vita Davanti a Se)" },
+        "4": { "text": "Speak Now", "subtext": "One Night in Miami" }
+      }
+    },
+    "7": {
+      "id": "animated-feature",
+      "name": "Animated Feature Film",
+      "candidates": {
+        "0": { "text": "Onward", "subtext": "" },
+        "1": { "text": "Over the Moon", "subtext": "" },
+        "2": { "text": "A Shaun the Sheep Movie: Farmageddon", "subtext": "" },
+        "3": { "text": "Soul", "subtext": "" },
+        "4": { "text": "Wolfwalkers", "subtext": "" }
+      }
+    },
+    "8": {
+      "id": "adapted-screenplay",
+      "name": "Adapted Screenplay",
+      "candidates": {
+        "0": { "text": "Borat Subsequent MovieFilm", "subtext": "" },
+        "1": { "text": "The Father", "subtext": "" },
+        "2": { "text": "Nomadland", "subtext": "" },
+        "3": { "text": "One Night in Miami", "subtext": "" },
+        "4": { "text": "The White Tiger", "subtext": "" }
+      }
+    },
+    "9": {
+      "id": "original-screenplay",
+      "name": "ORIGINAL SCREENPLAY",
+      "candidates": {
+        "0": { "text": "Judas and the Black Messiah", "subtext": "" },
+        "1": { "text": "Minari", "subtext": "" },
+        "2": { "text": "Promising Young Woman", "subtext": "" },
+        "3": { "text": "Sound of Metal", "subtext": "" },
+        "4": { "text": "The Trial of the Chicago 7", "subtext": "" }
+      }
+    },
+    "10": {
+      "id": "actor-leading-role",
+      "name": "ACTOR IN A LEADING ROLE",
+      "candidates": {
+        "0": { "text": "Riz Ahmed", "subtext": "Sound of Metal" },
+        "1": { "text": "Chadwick Boseman", "subtext": "Ma Rainey's Black Bottom" },
+        "2": { "text": "Anthony Hopkins", "subtext": "The Father" },
+        "3": { "text": "Gary Oldman", "subtext": "Mank" },
+        "4": { "text": "Steven Yeun", "subtext": "Minari" }
+      }
+    },
+    "11": {
+      "id": "actress-leading-role",
+      "name": "ACTRESS IN A LEADING ROLE",
+      "candidates": {
+        "0": { "text": "Viola Davis", "subtext": "Ma Rainey's Black Bottom" },
+        "1": { "text": "Andra Day", "subtext": "The United States vs. Billie Holiday" },
+        "2": { "text": "Vanessa Kirby", "subtext": "Pieces of a Woman" },
+        "3": { "text": "Frances McDormand", "subtext": "Nomadland" },
+        "4": { "text": "Carey Mulligan", "subtext": "Promising Young Woman" }
+      }
+    },
+    "12": {
+      "id": "director",
+      "name": "DIRECTOR",
+      "candidates": {
+        "0": { "text": "Thomas Vinterberg", "subtext": "Another Round" },
+        "1": { "text": "David Fincher", "subtext": "Mank" },
+        "2": { "text": "Lee Isaac Chung", "subtext": "Minari" },
+        "3": { "text": "Chloe Zhao", "subtext": "Nomadland" },
+        "4": { "text": "Emerald Fennell", "subtext": "Promising Young Woman" }
+      }
+    },
+    "13": {
+      "id": "production-design",
+      "name": "PRODUCTION DESIGN",
+      "candidates": {
+        "0": { "text": "The Father", "subtext": "" },
+        "1": { "text": "Ma Rainey's Black Bottom", "subtext": "" },
+        "2": { "text": "Mank", "subtext": "" },
+        "3": { "text": "News of the World", "subtext": "" },
+        "4": { "text": "Tenet", "subtext": "" }
+      }
+    },
+    "14": {
+      "id": "cinematography",
+      "name": "CINEMATOGRAPHY",
+      "candidates": {
+        "0": { "text": "Sean Bobbitt", "subtext": "Judas and the Black Messiah" },
+        "1": { "text": "Erik Messerschmidt", "subtext": "Mank" },
+        "2": { "text": "Dariusz Wolski", "subtext": "News of the World" },
+        "3": { "text": "Joshua James Richards", "subtext": "Nomadland" },
+        "4": { "text": "Phedon Papamichael", "subtext": "The Trial of the Chicago 7" }
+      }
+    },
+    "15": {
+      "id": "costume-design",
+      "name": "COSTUME DESIGN",
+      "candidates": {
+        "0": { "text": "Emma", "subtext": "" },
+        "1": { "text": "Ma Rainey's Blackbottom", "subtext": "" },
+        "2": { "text": "Mank", "subtext": "" },
+        "3": { "text": "Mulan", "subtext": "" },
+        "4": { "text": "Pinocchio", "subtext": "" }
+      }
+    },
+    "16": {
+      "id": "achievement-in-sound",
+      "name": "ACHIEVEMENT IN SOUND",
+      "candidates": {
+        "0": { "text": "Greyhound", "subtext": "" },
+        "1": { "text": "Mank", "subtext": "" },
+        "2": { "text": "News of the World", "subtext": "" },
+        "3": { "text": "Soul", "subtext": "" },
+        "4": { "text": "Sound of Metal", "subtext": "" }
+      }
+    },
+    "17": {
+      "id": "animated-short-film",
+      "name": "ANIMATED SHORT FILM",
+      "candidates": {
+        "0": { "text": "Burrow", "subtext": "" },
+        "1": { "text": "Genius Loci", "subtext": "" },
+        "2": { "text": "If Anything Happens I Love You", "subtext": "" },
+        "3": { "text": "Opera", "subtext": "" },
+        "4": { "text": "Yes-People", "subtext": "" }
+      }
+    },
+    "18": {
+      "id": "live-action-short-film",
+      "name": "LIVE ACTION SHORT FILM",
+      "candidates": {
+        "0": { "text": "Feeling Through", "subtext": "" },
+        "1": { "text": "The Letter Room", "subtext": "" },
+        "2": { "text": "The Present", "subtext": "" },
+        "3": { "text": "Two Distant Strangers", "subtext": "" },
+        "4": { "text": "White Eye", "subtext": "" }
+      }
+    },
+    "19": {
+      "id": "original-score",
+      "name": "ORIGINAL SCORE",
+      "candidates": {
+        "0": { "text": "Da 5 Bloods", "subtext": "" },
+        "1": { "text": "Mank", "subtext": "" },
+        "2": { "text": "Minari", "subtext": "" },
+        "3": { "text": "News of the World", "subtext": "" },
+        "4": { "text": "Soul", "subtext": "" }
+      }
+    },
+    "20": {
+      "id": "visual-effects",
+      "name": "VISUAL EFFECTS",
+      "candidates": {
+        "0": { "text": "Love and Monsters", "subtext": "" },
+        "1": { "text": "The Midnight Sky", "subtext": "" },
+        "2": { "text": "Mulan", "subtext": "" },
+        "3": { "text": "The One and Only Ivan", "subtext": "" },
+        "4": { "text": "Tenet", "subtext": "" }
+      }
+    },
+    "21": {
+      "id": "film-editing",
+      "name": "FILM EDITING",
+      "candidates": {
+        "0": { "text": "The Father", "subtext": "" },
+        "1": { "text": "Nomadland", "subtext": "" },
+        "2": { "text": "Promising Young Woman", "subtext": "" },
+        "3": { "text": "Sound of Metal", "subtext": "" },
+        "4": { "text": "The Trial of the Chicago 7", "subtext": "" }
+      }
+    },
+    "22": {
+      "id": "makeup-and-hairstyling",
+      "name": "MAKEUP AND HAIRSTYLING",
+      "candidates": {
+        "0": { "text": "Emma", "subtext": "" },
+        "1": { "text": "Hillbilly Elegy", "subtext": "" },
+        "2": { "text": "Ma Rainey's Black Bottom", "subtext": "" },
+        "3": { "text": "Mank", "subtext": "" },
+        "4": { "text": "Pinocchio", "subtext": "" }
       }
     }
   }

@@ -4,6 +4,6 @@ export function keyFromName (name) {
     .replace(/\s/g, '')
 }
 
-export function isSelected (ballot, value) {
+export function isSelected (ballot = [], value) {
   return ballot.indexOf(value) > -1
 }
