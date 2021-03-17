@@ -32,7 +32,7 @@ function AdminScreen () {
     db.ref(`/settings/${id}`)
       .on('value', (snapshot) => {
         setLocked(snapshot.val().locked)
-        setResults(snapshot.val().results)
+        setResults(snapshot.val().results || [])
       })
   }, [id])
 
