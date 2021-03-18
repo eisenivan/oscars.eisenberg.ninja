@@ -55,7 +55,7 @@ function Scoreboard () {
   useEffect(() => {
     db.ref('/settings/2021')
       .on('value', (snapshot) => {
-        setResults(snapshot.val().results)
+        setResults(snapshot.val().results || [])
       })
   }, [])
 
