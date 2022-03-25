@@ -37,7 +37,7 @@ function Scoreboard () {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    db.ref(`/groups/2021`)
+    db.ref(`/groups/2022`)
       .once('value')
       .then((snapshot) => {
         setMasterBallot(snapshot.val() || {})
@@ -45,7 +45,7 @@ function Scoreboard () {
   }, [])
 
   useEffect(() => {
-    db.ref(`/ballots/2021`)
+    db.ref(`/ballots/2022`)
       .on('value', (snapshot) => {
         setBallots(snapshot.val() || {})
         setLoading(false)
@@ -53,7 +53,7 @@ function Scoreboard () {
   }, [])
 
   useEffect(() => {
-    db.ref('/settings/2021')
+    db.ref('/settings/2022')
       .on('value', (snapshot) => {
         setResults(snapshot.val().results || [])
       })

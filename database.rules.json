@@ -7,6 +7,13 @@
           ".read": "auth.uid !== null"
         },
         ".read": "auth.uid !== null"
+      },
+      "2022": {
+        "$uid": {
+          ".write": "root.child('settings/2022/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null"
+        },
+        ".read": "auth.uid !== null"
       }
     },
     "scores": {
@@ -21,6 +28,10 @@
     },
     "groups": {
       "2021": {
+        ".read": true,
+        ".write": false
+      },
+      "2022": {
         ".read": true,
         ".write": false
       }

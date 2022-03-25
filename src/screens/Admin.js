@@ -21,7 +21,7 @@ function AdminScreen () {
   }
 
   useEffect(() => {
-    db.ref('/groups/2021')
+    db.ref('/groups/2022')
       .once('value')
       .then((snapshot) => {
         setCategories(snapshot.val())

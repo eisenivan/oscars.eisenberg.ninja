@@ -13,7 +13,7 @@ function Ballot () {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    db.ref('/groups/2021')
+    db.ref('/groups/2022')
       .once('value')
       .then((snapshot) => {
         setCategories(snapshot.val())
@@ -22,7 +22,7 @@ function Ballot () {
   }, [])
 
   useEffect(() => {
-    db.ref('/settings/2021')
+    db.ref('/settings/2022')
       .on('value', (snapshot) => {
         setLocked(snapshot.val().locked)
 
@@ -35,7 +35,7 @@ function Ballot () {
   }, [])
 
   useEffect(() => {
-    db.ref(`/ballots/2021/${user.uid}/votes`)
+    db.ref(`/ballots/2022/${user.uid}/votes`)
       .once('value')
       .then((snapshot) => {
         setBallot(snapshot.val() || [])
@@ -54,7 +54,7 @@ function Ballot () {
       tempBallot[index] = value
     }
 
-    db.ref(`ballots/2021/${user.uid}`).set({ displayName: user.displayName, votes: tempBallot }).then(() => {
+    db.ref(`ballots/2022/${user.uid}`).set({ displayName: user.displayName, votes: tempBallot }).then(() => {
       setBallot(tempBallot)
     })
   }
@@ -106,7 +106,7 @@ function Ballot () {
                     return (
                       <label className={`border-solid block pl-2 ml-2 border-l border-indigo-200 ${results.indexOf(key) > -1 ? resultClass : ''}`} key={key} htmlFor={key}>
                         <input disabled={locked} onChange={updateBallot} checked={isSelected(ballot, key)} className='mr-2' type='radio' name={cat.id} value={key} id={key} />
-                        <span className=''>{candidate.text}</span>
+                        <span className='uppercase'>{candidate.text}</span>
                         { candidate.subtext ? <span className='block ml-6 pb-2 font-light text-xs italic'>{candidate.subtext}</span> : null }
                       </label>
                     )
