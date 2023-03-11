@@ -3,6 +3,7 @@ import _sortBy from 'lodash.sortby'
 import { db, useSession } from '../services/auth'
 import Loader from '../components/Loader'
 import PageHeading from '../components/PageHeading'
+import { YEAR } from '../constants'
 
 function dynamicColor (index) {
   switch (index) {
@@ -37,7 +38,7 @@ function Scoreboard () {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    db.ref(`/groups/2022`)
+    db.ref(`/groups/${YEAR}`)
       .once('value')
       .then((snapshot) => {
         setMasterBallot(snapshot.val() || {})
@@ -45,7 +46,7 @@ function Scoreboard () {
   }, [])
 
   useEffect(() => {
-    db.ref(`/ballots/2022`)
+    db.ref(`/ballots/${YEAR}`)
       .on('value', (snapshot) => {
         setBallots(snapshot.val() || {})
         setLoading(false)
@@ -53,7 +54,7 @@ function Scoreboard () {
   }, [])
 
   useEffect(() => {
-    db.ref('/settings/2022')
+    db.ref(`/settings/${YEAR}`)
       .on('value', (snapshot) => {
         setResults(snapshot.val().results || [])
       })

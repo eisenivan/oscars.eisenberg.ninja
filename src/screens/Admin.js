@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { db } from '../services/auth'
 import { keyFromName, isSelected } from '../helpers'
+import { YEAR } from '../constants'
 
 function AdminScreen () {
   const { id } = useParams()
@@ -21,7 +22,7 @@ function AdminScreen () {
   }
 
   useEffect(() => {
-    db.ref('/groups/2022')
+    db.ref(`/groups/${YEAR}`)
       .once('value')
       .then((snapshot) => {
         setCategories(snapshot.val())

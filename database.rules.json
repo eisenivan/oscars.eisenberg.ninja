@@ -13,6 +13,12 @@
           ".write": "root.child('settings/2022/locked').val() === false && $uid === auth.uid",
           ".read": "auth.uid !== null"
         },
+        "2023": {
+          "$uid": {
+            ".write": "root.child('settings/2023/locked').val() === false && $uid === auth.uid",
+            ".read": "auth.uid !== null"
+          }
+        },
         ".read": "auth.uid !== null"
       }
     },
@@ -32,6 +38,10 @@
         ".write": false
       },
       "2022": {
+        ".read": true,
+        ".write": false
+      },
+      "2023": {
         ".read": true,
         ".write": false
       }

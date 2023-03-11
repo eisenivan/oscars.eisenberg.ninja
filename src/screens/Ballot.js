@@ -3,6 +3,7 @@ import Loader from '../components/Loader'
 import PageHeading from '../components/PageHeading'
 import { db, useSession } from '../services/auth'
 import { keyFromName, isSelected } from '../helpers'
+import { YEAR } from '../constants'
 
 function Ballot () {
   const user = useSession() || {}
@@ -13,7 +14,7 @@ function Ballot () {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    db.ref('/groups/2022')
+    db.ref(`/groups/${YEAR}`)
       .once('value')
       .then((snapshot) => {
         setCategories(snapshot.val())
@@ -22,7 +23,7 @@ function Ballot () {
   }, [])
 
   useEffect(() => {
-    db.ref('/settings/2022')
+    db.ref(`/settings/${YEAR}`)
       .on('value', (snapshot) => {
         setLocked(snapshot.val().locked)
 
@@ -35,7 +36,7 @@ function Ballot () {
   }, [])
 
   useEffect(() => {
-    db.ref(`/ballots/2022/${user.uid}/votes`)
+    db.ref(`/ballots/${YEAR}/${user.uid}/votes`)
       .once('value')
       .then((snapshot) => {
         setBallot(snapshot.val() || [])
@@ -54,7 +55,7 @@ function Ballot () {
       tempBallot[index] = value
     }
 
-    db.ref(`ballots/2022/${user.uid}`).set({ displayName: user.displayName, votes: tempBallot }).then(() => {
+    db.ref(`ballots/${YEAR}/${user.uid}`).set({ displayName: user.displayName, votes: tempBallot }).then(() => {
       setBallot(tempBallot)
     })
   }
