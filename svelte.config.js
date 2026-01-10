@@ -1,11 +1,11 @@
-import adapter from '@sveltejs/adapter-node';
+import adapter from '@sveltejs/adapter-static';
 import preprocess from 'svelte-preprocess';
 
 export default {
 	preprocess: preprocess(),
 	kit: {
 		adapter: adapter({
-			out: 'build'
+			fallback: 'index.html'
 		}),
 		files: {
 			routes: 'src-svelte/routes',

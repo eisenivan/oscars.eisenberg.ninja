@@ -1,6 +1,5 @@
-import { c as create_ssr_component, a as subscribe, d as each, e as escape, b as add_attribute } from "../../../../chunks/index3.js";
-import { p as page } from "../../../../chunks/stores.js";
-import { u as user } from "../../../../chunks/auth.js";
+import { c as create_ssr_component, f as each, e as escape, b as add_attribute } from "../../../../chunks/index3.js";
+import "../../../../chunks/auth.js";
 import "firebase/database";
 function keyFromName(name) {
   return name.toLowerCase().replace(/\s/g, "");
@@ -9,14 +8,12 @@ function isSelected(ballot = [], value) {
   return ballot.indexOf(value) > -1;
 }
 const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  let $$unsubscribe_page;
-  let $$unsubscribe_user;
-  $$unsubscribe_page = subscribe(page, (value) => value);
-  $$unsubscribe_user = subscribe(user, (value) => value);
+  let { data } = $$props;
+  data.id;
   let categories = [];
   let results = [];
-  $$unsubscribe_page();
-  $$unsubscribe_user();
+  if ($$props.data === void 0 && $$bindings.data && data !== void 0)
+    $$bindings.data(data);
   return `${$$result.head += `<!-- HEAD_svelte-13s6o7t_START -->${$$result.title = `<title>Admin</title>`, ""}<!-- HEAD_svelte-13s6o7t_END -->`, ""}
 
 <div><label class="border-solid block pl-2 mb-6" for="locked"><input class="mr-2" type="checkbox" ${"checked"} id="locked">

@@ -10,7 +10,7 @@ return {
 	assets: new Set([]),
 	mimeTypes: {},
 	_: {
-		client: {"start":"_app/immutable/entry/start.86bf7dbc.js","app":"_app/immutable/entry/app.189ff07e.js","imports":["_app/immutable/entry/start.86bf7dbc.js","_app/immutable/chunks/index.e3f5fe78.js","_app/immutable/chunks/singletons.e7dafbce.js","_app/immutable/chunks/control.c2cf8273.js","_app/immutable/entry/app.189ff07e.js","_app/immutable/chunks/preload-helper.a4192956.js","_app/immutable/chunks/index.e3f5fe78.js"],"stylesheets":[],"fonts":[]},
+		client: {"start":"_app/immutable/entry/start.4eab97aa.js","app":"_app/immutable/entry/app.16d2c19b.js","imports":["_app/immutable/entry/start.4eab97aa.js","_app/immutable/chunks/index.d983bbc4.js","_app/immutable/chunks/singletons.5a9f12cb.js","_app/immutable/chunks/paths.57a359a1.js","_app/immutable/chunks/control.c2cf8273.js","_app/immutable/entry/app.16d2c19b.js","_app/immutable/chunks/preload-helper.a4192956.js","_app/immutable/chunks/index.d983bbc4.js"],"stylesheets":[],"fonts":[]},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
@@ -19,7 +19,8 @@ return {
 			__memo(() => import('./nodes/4.js')),
 			__memo(() => import('./nodes/5.js')),
 			__memo(() => import('./nodes/6.js')),
-			__memo(() => import('./nodes/7.js'))
+			__memo(() => import('./nodes/7.js')),
+			__memo(() => import('./nodes/8.js'))
 		],
 		routes: [
 			{
@@ -62,6 +63,13 @@ return {
 				pattern: /^\/scoreboard\/?$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 7 },
+				endpoint: null
+			},
+			{
+				id: "/scoreboard/[year]",
+				pattern: /^\/scoreboard\/([^/]+?)\/?$/,
+				params: [{"name":"year","optional":false,"rest":false,"chained":false}],
+				page: { layouts: [0,], errors: [1,], leaf: 8 },
 				endpoint: null
 			}
 		],

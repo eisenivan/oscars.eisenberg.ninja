@@ -1,24 +1,17 @@
 import { r as redirect } from "../../chunks/index.js";
 import { u as user, i as initializing } from "../../chunks/auth.js";
+import { g as get_store_value } from "../../chunks/index3.js";
 async function load({ url }) {
-  let authUser = null;
-  let isInit = true;
-  const unsubscribeUser = user.subscribe((value) => {
-    authUser = value;
-  });
-  const unsubscribeInit = initializing.subscribe((value) => {
-    isInit = value;
-  });
-  unsubscribeUser();
-  unsubscribeInit();
   const publicRoutes = ["/login", "/register"];
-  if (isInit) {
-    return {};
+  const isPublicRoute = publicRoutes.includes(url.pathname);
+  const authUser = get_store_value(user);
+  const isInitializing = get_store_value(initializing);
+  if (isInitializing) {
+    return {
+      user: authUser
+    };
   }
-  if (!authUser && !publicRoutes.includes(url.pathname)) {
-    throw redirect(302, "/login");
-  }
-  if (authUser && publicRoutes.includes(url.pathname)) {
+  if (authUser && isPublicRoute) {
     throw redirect(302, "/");
   }
   return {

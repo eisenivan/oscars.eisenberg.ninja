@@ -1,6 +1,6 @@
-function load({ url }) {
+async function load() {
   return {
-    url: url.pathname
+    // Page data
   };
 }
 export {
