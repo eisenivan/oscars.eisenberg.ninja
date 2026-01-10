@@ -1,0 +1,172 @@
+{
+  ".svelte-kit/generated/server/internal.js": {
+    "file": "internal.js",
+    "imports": [
+      "_internal.js"
+    ],
+    "isEntry": true,
+    "src": ".svelte-kit/generated/server/internal.js"
+  },
+  "Loader.css": {
+    "file": "_app/immutable/assets/Loader.db00b920.css",
+    "src": "Loader.css"
+  },
+  "_Loader.js": {
+    "css": [
+      "_app/immutable/assets/Loader.db00b920.css"
+    ],
+    "file": "chunks/Loader.js",
+    "imports": [
+      "_index3.js"
+    ]
+  },
+  "_PageHeading.js": {
+    "file": "chunks/PageHeading.js",
+    "imports": [
+      "_index3.js"
+    ]
+  },
+  "_auth.js": {
+    "file": "chunks/auth.js",
+    "imports": [
+      "_index2.js"
+    ]
+  },
+  "_index.js": {
+    "file": "chunks/index.js"
+  },
+  "_index2.js": {
+    "file": "chunks/index2.js",
+    "imports": [
+      "_index3.js"
+    ]
+  },
+  "_index3.js": {
+    "file": "chunks/index3.js"
+  },
+  "_internal.js": {
+    "file": "chunks/internal.js",
+    "imports": [
+      "_index3.js"
+    ]
+  },
+  "_stores.js": {
+    "file": "chunks/stores.js",
+    "imports": [
+      "_index3.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/components/error.svelte": {
+    "file": "entries/fallbacks/error.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_stores.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/components/error.svelte"
+  },
+  "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
+    "file": "index.js",
+    "imports": [
+      "_internal.js",
+      "_index.js",
+      "_index2.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/server/index.js"
+  },
+  "src-svelte/routes/+layout.css": {
+    "file": "_app/immutable/assets/_layout.afbd6c72.css",
+    "src": "src-svelte/routes/+layout.css"
+  },
+  "src-svelte/routes/+layout.svelte": {
+    "css": [
+      "_app/immutable/assets/_layout.afbd6c72.css"
+    ],
+    "file": "entries/pages/_layout.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_auth.js",
+      "_Loader.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/+layout.svelte"
+  },
+  "src-svelte/routes/+layout.ts": {
+    "file": "entries/pages/_layout.ts.js",
+    "imports": [
+      "_index.js",
+      "_auth.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/+layout.ts"
+  },
+  "src-svelte/routes/+page.svelte": {
+    "file": "entries/pages/_page.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_auth.js",
+      "_Loader.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/+page.svelte"
+  },
+  "src-svelte/routes/+page.ts": {
+    "file": "entries/pages/_page.ts.js",
+    "isEntry": true,
+    "src": "src-svelte/routes/+page.ts"
+  },
+  "src-svelte/routes/admin/[id]/+page.svelte": {
+    "file": "entries/pages/admin/_id_/_page.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_stores.js",
+      "_auth.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/admin/[id]/+page.svelte"
+  },
+  "src-svelte/routes/login/+page.svelte": {
+    "file": "entries/pages/login/_page.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_PageHeading.js",
+      "_auth.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/login/+page.svelte"
+  },
+  "src-svelte/routes/profile/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/Loader.db00b920.css"
+    ],
+    "file": "entries/pages/profile/_page.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_PageHeading.js",
+      "_auth.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/profile/+page.svelte"
+  },
+  "src-svelte/routes/register/+page.svelte": {
+    "file": "entries/pages/register/_page.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_PageHeading.js",
+      "_auth.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/register/+page.svelte"
+  },
+  "src-svelte/routes/scoreboard/+page.svelte": {
+    "file": "entries/pages/scoreboard/_page.svelte.js",
+    "imports": [
+      "_index3.js",
+      "_auth.js",
+      "_Loader.js"
+    ],
+    "isEntry": true,
+    "src": "src-svelte/routes/scoreboard/+page.svelte"
+  }
+}

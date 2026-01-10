@@ -2,49 +2,32 @@
   "name": "gamblor",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "autoprefixer": "^9",
-    "firebase": "^8.2.1",
-    "lodash.sortby": "^4.7.0",
-    "postcss": "^7",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-firebase-hooks": "^3.0.4",
-    "react-router-dom": "^5.2.0",
-    "web-vitals": "^0.2.4"
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --plugin-search-dir . --write ."
   },
   "devDependencies": {
-    "@craco/craco": "^6.0.0",
-    "@tailwindcss/postcss7-compat": "^2.0.2",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "firebase-tools": "11",
-    "react-scripts": "4.0.1",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
+    "@sveltejs/adapter-auto": "^2.0.0",
+    "@sveltejs/adapter-node": "^1.2.0",
+    "@sveltejs/kit": "^1.0.0",
+    "@sveltejs/vite-plugin-svelte": "^2.0.0",
+    "autoprefixer": "^10",
+    "postcss": "^8",
+    "prettier": "^2.8.0",
+    "prettier-plugin-svelte": "^2.9.0",
+    "svelte": "^3.54.0",
+    "svelte-preprocess": "^5.0.0",
+    "tailwindcss": "^3",
+    "vite": "^4.0.0",
+    "vitest": "^0.34.0"
   },
-  "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject"
+  "dependencies": {
+    "firebase": "^9.22.0",
+    "lodash.sortby": "^4.7.0"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "type": "module"
 }

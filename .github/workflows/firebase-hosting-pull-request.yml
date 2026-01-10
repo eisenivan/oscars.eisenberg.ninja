@@ -7,8 +7,16 @@ jobs:
   build_and_preview:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: yarn build
+      - uses: actions/checkout@v3
+      - name: Set Node.js 24.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 24.x
+          cache: 'npm'
+      - name: Run install
+        run: npm ci
+      - name: Build production bundle
+        run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
