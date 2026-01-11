@@ -28,6 +28,48 @@
           ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2024/locked').val() === true)"
         },
         ".read": "auth.uid !== null && root.child('settings/2024/locked').val() === true"
+      },
+      "2025": {
+        "$uid": {
+          ".write": "root.child('settings/2025/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2025/locked').val() === true)"
+        },
+        ".read": "auth.uid !== null && root.child('settings/2025/locked').val() === true"
+      },
+      "2026": {
+        "$uid": {
+          ".write": "root.child('settings/2026/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2026/locked').val() === true)"
+        },
+        ".read": "auth.uid !== null && root.child('settings/2026/locked').val() === true"
+      },
+      "2027": {
+        "$uid": {
+          ".write": "root.child('settings/2027/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2027/locked').val() === true)"
+        },
+        ".read": "auth.uid !== null && root.child('settings/2027/locked').val() === true"
+      },
+      "2028": {
+        "$uid": {
+          ".write": "root.child('settings/2028/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2028/locked').val() === true)"
+        },
+        ".read": "auth.uid !== null && root.child('settings/2028/locked').val() === true"
+      },
+      "2029": {
+        "$uid": {
+          ".write": "root.child('settings/2029/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2029/locked').val() === true)"
+        },
+        ".read": "auth.uid !== null && root.child('settings/2029/locked').val() === true"
+      },
+      "2030": {
+        "$uid": {
+          ".write": "root.child('settings/2030/locked').val() === false && $uid === auth.uid",
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2030/locked').val() === true)"
+        },
+        ".read": "auth.uid !== null && root.child('settings/2030/locked').val() === true"
       }
     },
     "scores": {
