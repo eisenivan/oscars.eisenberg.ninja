@@ -37,6 +37,22 @@
 				<li>Browse leaderboards from past years</li>
 				<li>Scores calculated as results are announced</li>
 				<li>Tied scores display with the same rank</li>
+				<li><strong>Once voting closes:</strong> Click on any participant's name to view their full ballot</li>
+			</ul>
+		</section>
+
+		<!-- Comparing Ballots Section -->
+		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-orange-500 backdrop-blur-sm">
+			<h2 class="text-2xl font-bold mb-3 text-orange-600 dark:text-orange-400">🔍 Compare Ballots</h2>
+			<p class="text-gray-700 dark:text-gray-300 mb-4">
+				After voting closes, you can view other participants' ballots and compare them with your own predictions.
+			</p>
+			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
+				<li>Click any name on the leaderboard to view their ballot</li>
+				<li>Check the <strong>"Compare with my ballot"</strong> box to highlight differences</li>
+				<li>Categories where you picked differently are highlighted in yellow</li>
+				<li>See how many picks you have in common with others</li>
+				<li>The counter shows different categories that haven't been announced yet</li>
 			</ul>
 		</section>
 

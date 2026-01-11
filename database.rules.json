@@ -56,6 +56,36 @@
       "2024": {
         ".read": true,
         ".write": false
+      },
+      "2025": {
+        ".read": true,
+        ".write": false
+      },
+      "2026": {
+        ".read": true,
+        ".write": false
+      },
+      "2027": {
+        ".read": true,
+        ".write": false
+      },
+      "2028": {
+        ".read": true,
+        ".write": false
+      },
+      "2029": {
+        ".read": true,
+        ".write": false
+      },
+      "2030": {
+        ".read": true,
+        ".write": false
+      }
+    },
+    "admins": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('admins').child(auth.uid).exists() === true",
+        ".write": "root.child('admins').child(auth.uid).exists() === true"
       }
     }
   }

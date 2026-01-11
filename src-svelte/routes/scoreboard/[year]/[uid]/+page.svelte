@@ -93,21 +93,34 @@
 			</div>
 		{:else}
 			{#if myBallotVotes.length > 0}
-				<div class="mt-4 flex items-center">
-					<input
-						type="checkbox"
-						id="compare-checkbox"
-						bind:checked={compareMode}
-						class="mr-2"
-					/>
-					<label for="compare-checkbox" class="text-sm text-gray-700 dark:text-gray-300">
-						Compare with my ballot
-					</label>
+				{@const differentCount = categories.filter(cat => {
+					const winnerKey = results.find((x) => x && x.indexOf(cat.id) > -1);
+					const userKey = selectedKeyForCategory(cat);
+					const myKey = myBallotVotes.find(vote => vote.startsWith(`${cat.id}__`));
+					return !winnerKey && userKey !== myKey;
+				}).length}
+				<div class="mt-4 flex items-center justify-between">
+					<div class="flex items-center">
+						<input
+							type="checkbox"
+							id="compare-checkbox"
+							bind:checked={compareMode}
+							class="mr-2"
+						/>
+						<label for="compare-checkbox" class="text-sm text-gray-700 dark:text-gray-300">
+							Compare with my ballot
+						</label>
+					</div>
+					{#if compareMode}
+						<div class="text-sm text-gray-700 dark:text-gray-300">
+							Remaining different categories: <span class="font-semibold">{differentCount}</span>
+						</div>
+					{/if}
 				</div>
 			{/if}
 			<div class="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 border-blue-700 border-8 rounded-sm border-opacity-10 card-polish p-4 bg-blue-100">
 				{#each categories as cat (cat.id)}
-					{@const winnerKey = results.find((x) => x.indexOf(cat.id) > -1)}
+					{@const winnerKey = results.find((x) => x && x.indexOf(cat.id) > -1)}
 					{@const winningCandidate = winnerKey ? candidateForKey(cat, winnerKey) : null}
 					{@const userKey = selectedKeyForCategory(cat)}
 					{@const userWon = hasBallot && locked && results.length > 0 && userKey && userKey === winnerKey}
