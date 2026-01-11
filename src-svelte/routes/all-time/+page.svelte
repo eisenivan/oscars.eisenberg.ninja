@@ -161,7 +161,7 @@
 <div class="mx-auto max-w-4xl">
 	<div class="text-center mb-8">
 		<PageHeading>All-Time Medal Count</PageHeading>
-		<p class="text-sm text-gray-600">Winners across all years</p>
+		<p class="text-sm text-gray-600">Winners across all years <em>(since we moved to an online ballot)</em></p>
 	</div>
 
 	{#if loading}
