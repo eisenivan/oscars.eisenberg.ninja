@@ -52,6 +52,14 @@
 					</li>
 					<li>
 						<a
+							href="/all-time"
+							class="bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75"
+						>
+							All-Time
+						</a>
+					</li>
+					<li>
+						<a
 							href="/profile"
 							class="bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75"
 						>
