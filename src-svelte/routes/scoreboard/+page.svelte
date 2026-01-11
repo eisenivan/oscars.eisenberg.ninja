@@ -48,7 +48,7 @@
 {:else}
 	<div class="mx-auto max-w-lg text-center">
 		<PageHeading>Leaderboard History</PageHeading>
-		<p class="text-sm text-gray-600 mb-6">Select a year to view past leaderboards</p>
+		<p class="text-sm text-gray-600 dark:text-gray-300 mb-6">Select a year to view past leaderboards</p>
 	</div>
 
 	{#if error}
@@ -62,7 +62,7 @@
 			{#each years as year (year)}
 				<a
 					href="/scoreboard/{year}"
-					class="block p-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors text-center font-semibold"
+					class="block p-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors text-center font-semibold card-polish"
 				>
 					{year} {year === YEAR ? '(Current)' : ''}
 				</a>

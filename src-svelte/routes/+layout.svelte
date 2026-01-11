@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>Oscars // Eisenberg // Ninja</title>
+	<title>Eisenberg Oscar Party</title>
 	<meta name="description" content="Oscars voting application" />
 </svelte:head>
 

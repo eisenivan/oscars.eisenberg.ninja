@@ -13,8 +13,104 @@ body {
 		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	background-color: #f9fafb;
+	background-image: 
+		radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+	background-size: 40px 40px;
+	color: #1f2937;
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark body {
+	background-color: #0f172a;
+	background-image: 
+		radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+	color: #f3f4f6;
 }
 
 code {
 	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+h1, h2, h3, h4, h5, h6 {
+	color: #1f2937;
+	transition: color 0.3s ease;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+	color: #f3f4f6;
+}
+
+/* Global section styling */
+section {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+	transition: box-shadow 0.3s ease;
+	background-color: #ffffff;
+	border-radius: 0.5rem;
+}
+
+section:hover {
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+html.dark section {
+	background-color: #1e293b;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+html.dark section:hover {
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Utility classes for polish */
+@layer components {
+	.card-polish {
+		@apply backdrop-blur-sm rounded-lg shadow-sm;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+		transition: box-shadow 0.3s ease;
+		background-color: #ffffff;
+	}
+
+	.card-polish:hover {
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+	}
+
+	html.dark .card-polish {
+		background-color: #1e293b;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+	}
+
+	html.dark .card-polish:hover {
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+	}
+
+	.bg-pattern-subtle {
+		background-image: 
+			radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+		background-size: 40px 40px;
+	}
+
+	html.dark .bg-pattern-subtle {
+		background-image: 
+			radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+	}
+
+	.bg-pattern-blue {
+		background-image: 
+			linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+			radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+		background-size: auto, 30px 30px;
+	}
+
+	html.dark .bg-pattern-blue {
+		background-image: 
+			linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+			radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+	}
+}
+

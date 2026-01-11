@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/services/auth';
 	import { auth } from '$lib/services/auth';
+	import { theme } from '$lib/stores/theme';
 
 	let menuOpen = false;
 
@@ -16,7 +17,7 @@
 	<div class="container mx-auto flex flex-wrap items-center justify-between">
 		<div class="w-full relative flex justify-between lg:w-auto lg:px-4 lg:static lg:block lg:justify-start">
 			<a href="/" class="text-sm font-bold leading-relaxed inline-block mr-4 whitespace-nowrap uppercase text-white">
-				<h1>oscars // eisenberg // ninja</h1>
+				<h1 class="!text-white m-0">oscars // eisenberg</h1>
 			</a>
 			<button
 				on:click={() => (menuOpen = !menuOpen)}
@@ -67,6 +68,14 @@
 						</a>
 					</li>
 					<li>
+						<a
+							href="/about"
+							class="bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75"
+						>
+							About
+						</a>
+					</li>
+					<li>
 						<button
 							on:click={handleLogout}
 							class="bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75"
@@ -91,7 +100,24 @@
 							Register
 						</a>
 					</li>
+					<li>
+						<a
+							href="/about"
+							class="bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75"
+						>
+							About
+						</a>
+					</li>
 				{/if}
+                <li>
+					<button
+						on:click={() => theme.toggle()}
+						class="bg-blue-900 sm:bg-transparent px-3 py-2 flex items-center text-xs uppercase font-bold leading-snug text-white hover:opacity-75"
+						title="Toggle dark mode"
+					>
+						{$theme ? '☀️' : '🌙'}
+					</button>
+				</li>
 			</ul>
 		</div>
 	</div>

@@ -4,30 +4,30 @@
       "2021": {
         "$uid": {
           ".write": "root.child('settings/2021/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null"
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2021/locked').val() === true)"
         },
-        ".read": "auth.uid !== null"
+        ".read": "auth.uid !== null && root.child('settings/2021/locked').val() === true"
       },
       "2022": {
         "$uid": {
           ".write": "root.child('settings/2022/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null"
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2022/locked').val() === true)"
         },
-        ".read": "auth.uid !== null"
+        ".read": "auth.uid !== null && root.child('settings/2022/locked').val() === true"
       },
       "2023": {
         "$uid": {
           ".write": "root.child('settings/2023/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null"
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2023/locked').val() === true)"
         },
-        ".read": "auth.uid !== null"
+        ".read": "auth.uid !== null && root.child('settings/2023/locked').val() === true"
       },
       "2024": {
         "$uid": {
           ".write": "root.child('settings/2024/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null"
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2024/locked').val() === true)"
         },
-        ".read": "auth.uid !== null"
+        ".read": "auth.uid !== null && root.child('settings/2024/locked').val() === true"
       }
     },
     "scores": {

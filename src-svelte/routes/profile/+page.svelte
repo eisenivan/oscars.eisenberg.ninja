@@ -4,12 +4,14 @@
 	import { db, auth, sendPasswordResetEmail } from '$lib/services/auth';
 	import Loader from '$lib/components/Loader.svelte';
 	import PageHeading from '$lib/components/PageHeading.svelte';
-	import { ref, update } from 'firebase/database';
+	import { ref } from 'firebase/database';
 	import { updateProfile as updateFirebaseProfile, updateEmail } from 'firebase/auth';
 
 	let displayName = '';
 	let email = '';
 	let loading = false;
+	let resetMessage = '';
+	let resetLoading = false;
 
 	$: if ($user) {
 		displayName = $user.displayName || '';
@@ -38,11 +40,16 @@
 	};
 
 	const handlePasswordReset = async () => {
+		resetMessage = '';
+		resetLoading = true;
 		try {
 			await sendPasswordResetEmail($user.email);
-			alert('Check your email for password reset instructions');
+			resetMessage = 'Password reset email sent! Check your inbox.';
 		} catch (error) {
 			console.error('Error sending reset email:', error);
+			resetMessage = error.message || 'Error sending password reset email';
+		} finally {
+			resetLoading = false;
 		}
 	};
 
@@ -55,7 +62,7 @@
 	<title>Your Profile</title>
 </svelte:head>
 
-<div class="w-full mt-2 max-w-sm m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm">
+<div class="w-full mt-2 max-w-sm m-auto card-polish p-5 bg-blue-100">
 	<header>
 		<div class="mx-auto text-center mb-5">
 			<PageHeading>Your Profile</PageHeading>
@@ -97,12 +104,18 @@
 	</form>
 
 	<div>
+		{#if resetMessage}
+			<div class="text-sm mb-4 {resetMessage.includes('sent') ? 'text-green-600' : 'text-red-600'}">
+				{resetMessage}
+			</div>
+		{/if}
 		<button
 			type="button"
 			on:click={handlePasswordReset}
-			class="block hover:text-indigo-500 text-blue-500 font-bold py-2 px-4 mb-6 mx-auto"
+			disabled={resetLoading}
+			class="block hover:text-indigo-500 text-blue-500 font-bold py-2 px-4 mb-6 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
 		>
-			Reset Password?
+			{resetLoading ? 'Sending...' : 'Reset Password?'}
 		</button>
 	</div>
 </div>

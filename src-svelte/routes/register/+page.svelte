@@ -33,7 +33,7 @@
 	}
 </script>
 
-<div class="w-full mt-2 max-w-xs m-auto bg-blue-100 p-5 border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm">
+<div class="w-full mt-2 max-w-xs m-auto card-polish p-5 bg-blue-100">
 	<div class="mx-auto text-center mb-5">
 		<PageHeading>Register</PageHeading>
 	</div>

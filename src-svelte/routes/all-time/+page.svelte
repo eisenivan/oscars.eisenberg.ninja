@@ -14,6 +14,7 @@
 
 	let sortByColumn = 'total';
 	let sortAsc = false;
+	let baseResults = [];
 	let sortedResults = [];
 	let loading = true;
 	let error = null;
@@ -111,6 +112,7 @@
 					return a.displayName.localeCompare(b.displayName);
 				});
 
+			baseResults = results;
 			sortedResults = results;
 			loading = false;
 		} catch (err) {
@@ -120,24 +122,17 @@
 		}
 	});
 
-	$: {
-		if (sortedResults.length > 0) {
-			const sorted = [...sortedResults];
-			sorted.sort((a, b) => {
-				let aVal = a[sortByColumn];
-				let bVal = b[sortByColumn];
+	$: sortedResults = baseResults.length > 0 ? [...baseResults].sort((a, b) => {
+		let aVal = a[sortByColumn];
+		let bVal = b[sortByColumn];
 
-				if (typeof aVal === 'string') {
-					const cmp = aVal.localeCompare(bVal);
-					return sortAsc ? cmp : -cmp;
-				} else {
-					return sortAsc ? aVal - bVal : bVal - aVal;
-				}
-			});
-
-			sortedResults = sorted;
+		if (typeof aVal === 'string') {
+			const cmp = aVal.localeCompare(bVal);
+			return sortAsc ? cmp : -cmp;
+		} else {
+			return sortAsc ? aVal - bVal : bVal - aVal;
 		}
-	}
+	}) : [];
 
 	function handleSort(column) {
 		if (sortByColumn === column) {
@@ -148,10 +143,7 @@
 		}
 	}
 
-	function getSortIndicator(column) {
-		if (sortByColumn !== column) return '';
-		return sortAsc ? ' ↑' : ' ↓';
-	}
+	$: sortIndicator = (column) => sortByColumn === column ? (sortAsc ? '↑' : '↓') : '';
 </script>
 
 <svelte:head>
@@ -161,7 +153,7 @@
 <div class="mx-auto max-w-4xl">
 	<div class="text-center mb-8">
 		<PageHeading>All-Time Medal Count</PageHeading>
-		<p class="text-sm text-gray-600">Winners across all years <em>(since we moved to an online ballot)</em></p>
+		<p class="text-sm text-gray-600 dark:text-gray-300">Winners across all years <em>(since we moved to an online ballot)</em></p>
 	</div>
 
 	{#if loading}
@@ -173,50 +165,52 @@
 			{error}
 		</div>
 	{:else if sortedResults && sortedResults.length > 0}
-		<div class="overflow-x-auto">
+		<div class="overflow-x-auto card-polish p-6">
 			<table class="w-full border-collapse">
 				<thead>
-					<tr class="bg-blue-50 border-b-2 border-blue-200">
-						<th class="px-4 py-3 text-left font-semibold cursor-pointer hover:bg-blue-100" on:click={() => handleSort('rank')}>
-							Rank{getSortIndicator('rank')}
+					<tr class="bg-blue-50 dark:bg-blue-900 border-b-2 border-blue-200 dark:border-blue-700">
+						<th class="px-4 py-3 text-left font-semibold dark:text-gray-200">
+							Rank
 						</th>
-						<th class="px-4 py-3 text-left font-semibold cursor-pointer hover:bg-blue-100" on:click={() => handleSort('displayName')}>
-							Name{getSortIndicator('displayName')}
+						<th class="relative px-4 py-3 text-left font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('displayName')}>
+							Name
+							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('displayName')}</span>
 						</th>
-						<th class="px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100" on:click={() => handleSort('gold')}>
+						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('gold')}>
 							<span class="inline-block px-2 py-1 rounded {medalColors.gold}">🥇</span>
-							{getSortIndicator('gold')}
+							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('gold')}</span>
 						</th>
-						<th class="px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100" on:click={() => handleSort('silver')}>
+						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('silver')}>
 							<span class="inline-block px-2 py-1 rounded {medalColors.silver}">🥈</span>
-							{getSortIndicator('silver')}
+							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('silver')}</span>
 						</th>
-						<th class="px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100" on:click={() => handleSort('bronze')}>
+						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('bronze')}>
 							<span class="inline-block px-2 py-1 rounded {medalColors.bronze}">🥉</span>
-							{getSortIndicator('bronze')}
+							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('bronze')}</span>
 						</th>
-						<th class="px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100" on:click={() => handleSort('total')}>
-							Points{getSortIndicator('total')}
+						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('total')}>
+							Points
+							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('total')}</span>
 						</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each sortedResults as result, index}
-						<tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors">
-							<td class="px-4 py-3 font-bold text-blue-600">#{index + 1}</td>
-							<td class="px-4 py-3 font-medium">{result.displayName}</td>
+						<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+							<td class="px-4 py-3 font-bold text-blue-600 dark:text-blue-400">#{index + 1}</td>
+							<td class="px-4 py-3 font-medium dark:text-gray-200">{result.displayName}</td>
 							<td class="px-4 py-3 text-center">
-								<span class="inline-block px-3 py-1 rounded font-bold {medalColors.gold}">
+								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.gold}">
 									{result.gold}
 								</span>
 							</td>
 							<td class="px-4 py-3 text-center">
-								<span class="inline-block px-3 py-1 rounded font-bold {medalColors.silver}">
+								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.silver}">
 									{result.silver}
 								</span>
 							</td>
 							<td class="px-4 py-3 text-center">
-								<span class="inline-block px-3 py-1 rounded font-bold {medalColors.bronze}">
+								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.bronze}">
 									{result.bronze}
 								</span>
 							</td>
@@ -232,9 +226,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	:global(body) {
-		background-color: #f9fafb;
-	}
-</style>

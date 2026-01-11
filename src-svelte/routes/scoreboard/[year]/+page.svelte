@@ -29,6 +29,7 @@
 	let masterBallot = {};
 	let loading = true;
 	let rankedSortedBallots = [];
+	let locked = false;
 
 	onMount(async () => {
 		if (!$user) {
@@ -58,6 +59,7 @@
 		onValue(settingsRef, (snapshot) => {
 			const settings = snapshot.val();
 			results = settings?.results || [];
+			locked = settings?.locked || false;
 			updateLeaderboard();
 		});
 	});
@@ -74,7 +76,7 @@
 			});
 		});
 
-		const ballotArray = Object.keys(ballots).map((key) => ballots[key]);
+		const ballotArray = Object.keys(ballots).map((uid) => ({ uid, ...ballots[uid] }));
 		const sortedBallots = sortBy(ballotArray, ['score', 'displayName']).reverse();
 
 		// Set ranks
@@ -97,10 +99,10 @@
 {#if !loading}
 	<div class="mx-auto max-w-lg text-center">
 		<PageHeading>Leaderboard - {year}</PageHeading>
-		<p class="text-xs mb-2">
+		<p class="text-xs mb-2 dark:text-gray-300">
 			{results.length} of {Object.keys(masterBallot).length} categories announced
 		</p>
-		<a href="/scoreboard" class="text-blue-600 hover:underline text-sm">← Back to Year Selection</a>
+		<a href="/scoreboard" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">← Back to Year Selection</a>
 	</div>
 	<div class="max-w-lg mx-auto border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm">
 		{#each rankedSortedBallots as ballot (ballot.displayName)}
@@ -109,11 +111,20 @@
 					$user?.displayName === ballot.displayName ? 'transform scale-105 shadow-lg' : ''
 				}`}
 			>
-				<div class="bg-white rounded-full p-0.5 rotate-12 font-black text-center">#{ballot.rank}</div>
-				<div class={`flex items-center ${$user?.displayName === ballot.displayName ? 'font-bold italic' : ''}`}>
-					{ballot.displayName}
+				<div class="bg-white dark:bg-slate-800 dark:text-gray-100 rounded-full p-0.5 font-black text-center">#{ballot.rank}</div>
+				<div class={`flex items-center dark:text-gray-900 ${$user?.displayName === ballot.displayName ? 'font-bold italic' : ''}`}>
+					{#if locked}
+						<a
+							href={`/scoreboard/${year}/${ballot.uid}`}
+							class="underline hover:text-blue-800 dark:hover:text-blue-200"
+						>
+							{ballot.displayName}
+						</a>
+					{:else}
+						{ballot.displayName}
+					{/if}
 				</div>
-				<div class="flex items-center font-black text-right">{ballot.score}</div>
+				<div class="flex items-center font-black text-right dark:text-gray-900">{ballot.score}</div>
 			</div>
 		{/each}
 	</div>
