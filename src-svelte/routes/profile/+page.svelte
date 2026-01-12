@@ -44,7 +44,7 @@
 		resetLoading = true;
 		try {
 			await sendPasswordResetEmail($user.email);
-			resetMessage = 'Password reset email sent! Check your inbox.';
+			resetMessage = 'Password reset email sent! Check your inbox. You may need to check your spam folder.';
 		} catch (error) {
 			console.error('Error sending reset email:', error);
 			resetMessage = error.message || 'Error sending password reset email';
