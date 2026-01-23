@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "lint": "eslint .",
-    "format": "prettier --plugin-search-dir . --write ."
+    "format": "prettier --plugin-search-dir . --write .",
+    "deploy:rules": "firebase deploy --only database"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^2.0.0",

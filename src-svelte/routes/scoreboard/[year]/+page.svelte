@@ -171,7 +171,7 @@
 		<div class="max-w-lg mx-auto border-blue-700 border-8 rounded-sm border-opacity-10 shadow-sm">
 			{#each rankedSortedBallots as ballot (ballot.displayName)}
 				<div
-					class={`grid ${locked ? 'grid-cols-leaderboard' : 'grid-cols-1'} gap-x-2 p-2 ${dynamicColor(ballot.rank)} ${
+					class={`grid ${locked ? 'grid-cols-leaderboard' : 'grid-cols-[auto_1fr]'} gap-x-2 p-2 ${dynamicColor(ballot.rank)} ${
 						$user?.displayName === ballot.displayName ? 'transform scale-105 shadow-lg' : ''
 					}`}
 				>
