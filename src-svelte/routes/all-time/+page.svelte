@@ -18,6 +18,8 @@
 	let sortedResults = [];
 	let loading = true;
 	let error = null;
+	let selectedPersonHistory = null;
+	let tooltipPosition = { x: 0, y: 0 };
 
 	onMount(async () => {
 		if (!$user) {
@@ -27,6 +29,7 @@
 
 		try {
 			const medals = {};
+			const history = {}; // Track year-by-year history
 
 			// Get all settings to find available years
 			const settingsRef = ref(db, '/settings');
@@ -83,12 +86,16 @@
 					return [...acc, { ...entry, rank }];
 				}, []);
 
-				// Award medals for 1st, 2nd, 3rd
+				// Award medals for 1st, 2nd, 3rd and track history
 				ranked.forEach((entry) => {
 					const name = entry.displayName;
 					if (!medals[name]) {
 						medals[name] = { gold: 0, silver: 0, bronze: 0 };
+						history[name] = [];
 					}
+
+					// Track history entry
+					history[name].push({ year: parseInt(year), rank: entry.rank });
 
 					if (entry.rank === 1) {
 						medals[name].gold += 1;
@@ -107,7 +114,8 @@
 					gold: counts.gold,
 					silver: counts.silver,
 					bronze: counts.bronze,
-					total: counts.gold * 3 + counts.silver * 2 + counts.bronze * 1
+					total: counts.gold * 3 + counts.silver * 2 + counts.bronze * 1,
+					history: history[name]
 				}))
 				.sort((a, b) => {
 					// Sort by points first, then gold, then silver, then bronze
@@ -147,6 +155,18 @@
 			sortByColumn = column;
 			sortAsc = false;
 		}
+	}
+
+	function handleNameClick(event, result) {
+		selectedPersonHistory = result;
+		tooltipPosition = {
+			x: event.clientX,
+			y: event.clientY
+		};
+	}
+
+	function handleCloseTooltip() {
+		selectedPersonHistory = null;
 	}
 
 	$: sortIndicator = (column) => sortByColumn === column ? (sortAsc ? '↑' : '↓') : '';
@@ -204,7 +224,15 @@
 					{#each sortedResults as result, index}
 						<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
 							<td class="px-4 py-3 font-bold text-blue-600 dark:text-blue-400">#{index + 1}</td>
-							<td class="px-4 py-3 font-medium dark:text-gray-200">{result.displayName}</td>
+							<td class="px-4 py-3 font-medium dark:text-gray-200">
+								<button
+									on:click={(e) => handleNameClick(e, result)}
+									class="cursor-pointer hover:underline text-left"
+									title="Click to see history"
+								>
+									{result.displayName}
+								</button>
+							</td>
 							<td class="px-4 py-3 text-center">
 								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.gold}">
 									{result.gold}
@@ -230,5 +258,45 @@
 		<div class="text-center text-gray-600 py-8">
 			No results yet
 		</div>
+	{/if}
+
+	{#if selectedPersonHistory}
+		<div
+			class="fixed bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg p-4 max-w-sm z-50"
+			style="left: {tooltipPosition.x}px; top: {tooltipPosition.y}px; transform: translate(-50%, 10px);"
+		>
+			<div class="flex justify-between items-start mb-3">
+				<h3 class="font-bold text-lg dark:text-gray-100">{selectedPersonHistory.displayName}</h3>
+				<button
+					on:click={handleCloseTooltip}
+					class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold text-xl leading-none"
+				>
+					✕
+				</button>
+			</div>
+			<div class="space-y-2">
+				{#each selectedPersonHistory.history.sort((a, b) => b.year - a.year) as entry (entry.year)}
+					<div class="flex justify-between text-sm dark:text-gray-200">
+						<span class="font-medium">{entry.year}:</span>
+						<span>
+							{#if entry.rank === 1}
+								🥇 1st Place
+							{:else if entry.rank === 2}
+								🥈 2nd Place
+							{:else if entry.rank === 3}
+								🥉 3rd Place
+							{:else}
+								#{entry.rank}
+							{/if}
+						</span>
+					</div>
+				{/each}
+			</div>
+		</div>
+		<div
+			class="fixed inset-0 z-40"
+			on:click={handleCloseTooltip}
+			on:keydown={(e) => e.key === 'Escape' && handleCloseTooltip()}
+		/>
 	{/if}
 </div>
