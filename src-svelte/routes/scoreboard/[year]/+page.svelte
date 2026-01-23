@@ -176,9 +176,18 @@
 					}`}
 				>
 					<div class="bg-white dark:bg-slate-800 dark:text-gray-100 rounded-full p-0.5 font-black text-center">#{ballot.rank}</div>
-					<div class={`flex items-center dark:text-gray-900 ${$user?.displayName === ballot.displayName ? 'font-bold italic' : ''}`}>
-						{ballot.displayName}
-					</div>
+						<div class={`flex items-center dark:text-gray-900 ${$user?.displayName === ballot.displayName ? 'font-bold italic' : ''}`}>
+							{#if locked}
+								<a
+									href={`/scoreboard/${year}/${ballot.uid}`}
+									class="underline hover:text-blue-800 dark:hover:text-blue-200"
+								>
+									{ballot.displayName}
+								</a>
+							{:else}
+								{ballot.displayName}
+							{/if}
+						</div>
 					{#if locked}
 						<div class="flex items-center font-black text-right dark:text-gray-900">{ballot.score}</div>
 					{/if}
