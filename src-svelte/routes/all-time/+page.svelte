@@ -35,13 +35,19 @@
 
 			// Process each year
 			for (const year of Object.keys(settingsData).sort()) {
+				const settings = settingsData[year];
+				
+				// Skip years where voting is still open
+				if (!settings?.locked) {
+					continue;
+				}
+
 				// Get ballots for this year
 				const ballotsRef = ref(db, `/ballots/${year}`);
 				const ballotsSnapshot = await get(ballotsRef);
 				const ballots = ballotsSnapshot.val() || {};
 
 				// Get results for this year
-				const settings = settingsData[year];
 				const results = settings?.results || [];
 
 				// Calculate scores for each person
