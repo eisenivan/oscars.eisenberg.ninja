@@ -1,133 +1,69 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { user } from '$lib/services/auth';
-	import { signInWithEmail } from '$lib/services/auth';
-	import PageHeading from '$lib/components/PageHeading.svelte';
+	import { page } from '$app/stores';
+	import { signIn, resetPassword, authMessage } from '$lib/auth.js';
+	import AuthCard from '$lib/components/shell/AuthCard.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
-	let isResetting = false;
+	let mode = 'login'; // login | reset
 	let email = '';
 	let password = '';
 	let error = '';
+	let notice = '';
+	let busy = false;
 
-	const handleLogin = async (e) => {
-		e.preventDefault();
-		error = '';
+	async function submit() {
+		error = notice = '';
+		busy = true;
 		try {
-			await signInWithEmail(email, password);
-			await goto('/');
+			if (mode === 'login') {
+				await signIn(email.trim(), password);
+				await goto($page.url.searchParams.get('next') || '/', { invalidateAll: true });
+			} else {
+				await resetPassword(email.trim());
+				notice = `We sent a reset link to ${email.trim()}. Check spam if you don’t see it.`;
+			}
 		} catch (err) {
-			error = err.message;
-			console.warn(err);
+			error = authMessage(err);
+		} finally {
+			busy = false;
 		}
-	};
-
-	const handleResetPassword = async (e) => {
-		e.preventDefault();
-		error = '';
-		try {
-			const { sendPasswordResetEmail } = await import('firebase/auth');
-			const { auth } = await import('$lib/services/auth');
-			await sendPasswordResetEmail(auth, email);
-			isResetting = false;
-			error = 'Password reset email sent!';
-		} catch (err) {
-			error = err.message;
-			console.warn(err);
-		}
-	};
-
-	if ($user) {
-		goto('/');
+	}
+	function switchMode(m) {
+		mode = m;
+		error = notice = '';
 	}
 </script>
 
-<div class="w-full mt-2 max-w-xs m-auto card-polish p-5 bg-blue-100">
-	<div class="mx-auto text-center mb-5">
-		<PageHeading>Login</PageHeading>
-	</div>
-	{#if !isResetting}
-		<form on:submit={handleLogin}>
-			{#if error}
-				<div class="text-red-600 text-sm mb-4">{error}</div>
-			{/if}
-			<div>
-				<label class="block mb-2 text-blue-500" for="email">Email</label>
-				<input
-					class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-					type="text"
-					name="email"
-					bind:value={email}
-					required
-				/>
+<svelte:head><title>{mode === 'login' ? 'Log in' : 'Reset password'} · Oscars</title></svelte:head>
+
+<AuthCard
+	title={mode === 'login' ? 'Welcome back' : 'Reset password'}
+	subtitle={mode === 'login' ? 'Log in to fill out your Oscar ballot.' : 'We’ll email you a link to choose a new one.'}
+>
+	<form on:submit|preventDefault={submit} class="space-y-4" novalidate>
+		{#if error}
+			<p class="flex items-start gap-2 rounded-sm bg-danger/10 p-3 text-sm text-danger" role="alert"><Icon name="alert" size={18} class="mt-px" />{error}</p>
+		{/if}
+		{#if notice}
+			<p class="flex items-start gap-2 rounded-sm bg-success/10 p-3 text-sm text-success" role="status"><Icon name="check" size={18} class="mt-px" />{notice}</p>
+		{/if}
+		<TextField label="Email" type="email" bind:value={email} autocomplete="email" inputmode="email" required />
+		{#if mode === 'login'}
+			<TextField label="Password" type="password" bind:value={password} autocomplete="current-password" required />
+			<div class="-mt-1 text-right">
+				<button type="button" class="text-sm font-medium text-gold hover:underline" on:click={() => switchMode('reset')}>Forgot password?</button>
 			</div>
-			<div>
-				<label class="block mb-2 text-blue-500" for="password">Password</label>
-				<input
-					class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-					type="password"
-					name="password"
-					bind:value={password}
-					required
-				/>
-			</div>
-			<div>
-				<button
-					type="submit"
-					class="block text-center bg-blue-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto"
-				>
-					Login
-				</button>
-			</div>
-			<div class="mb-3">
-				<p class="text-xs italic text-center">Don't have an account?</p>
-				<a href="/register" class="block text-center mx-auto text-xs underline">Register</a>
-			</div>
-			<div>
-				<button
-					type="button"
-					class="block text-center mx-auto text-xs underline"
-					on:click={() => (isResetting = true)}
-				>
-					Forgot Password?
-				</button>
-			</div>
-		</form>
-	{:else}
-		<form on:submit={handleResetPassword}>
-			{#if error}
-				<div class="text-green-600 text-sm mb-4">{error}</div>
-			{/if}
-			<div>
-				<label class="block mb-2 text-blue-500" for="email">Email</label>
-				<input
-					class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-					type="text"
-					name="email"
-					bind:value={email}
-					required
-				/>
-			</div>
-			<div>
-				<button
-					type="submit"
-					class="block text-center bg-blue-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto"
-				>
-					Reset Password
-				</button>
-			</div>
-			<div class="mb-3">
-				<p class="text-xs italic text-center">Don't have an account?</p>
-				<a href="/register" class="block text-center mx-auto text-xs underline">Register</a>
-			</div>
-			<div>
-				<button
-					type="button"
-					class="block text-center mx-auto text-xs underline"
-					on:click={() => (isResetting = false)}
-				>
-					Return to Login
-				</button>
-			</div>
-		</form>
-	{/if}
-</div>
+		{/if}
+		<Button type="submit" size="lg" full loading={busy}>{mode === 'login' ? 'Log in' : 'Send reset link'}</Button>
+		{#if mode === 'reset'}
+			<Button variant="ghost" full on:click={() => switchMode('login')}><Icon name="chevron-left" size={18} /> Back to log in</Button>
+		{/if}
+	</form>
+	<svelte:fragment slot="footer">
+		New here? <a href="/register" class="font-semibold text-gold hover:underline">Create an account</a>
+		<span class="mx-1.5">·</span><a href="/about" class="hover:text-fg hover:underline">How it works</a>
+	</svelte:fragment>
+</AuthCard>

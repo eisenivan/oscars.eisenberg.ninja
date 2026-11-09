@@ -1,5 +1,3 @@
-export async function load({ params }) {
-	return {
-		year: parseInt(params.year)
-	};
+export function load({ params }) {
+	return { year: Number(params.year) };
 }

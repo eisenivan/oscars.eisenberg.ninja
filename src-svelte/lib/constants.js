@@ -1,1 +1,1 @@
-export const YEAR = 2026;
+export { YEAR } from './data/queries.js';

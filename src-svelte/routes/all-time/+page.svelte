@@ -1,302 +1,234 @@
 <script>
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { user, db } from '$lib/services/auth';
-	import { ref, get } from 'firebase/database';
-	import sortByLodash from 'lodash.sortby';
-	import PageHeading from '$lib/components/PageHeading.svelte';
+	import { user } from '$lib/auth.js';
+	import { read } from '$lib/data/db.js';
+	import { medalTable, champions } from '$lib/domain/scoring.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Sheet from '$lib/components/ui/Sheet.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import ListSkeleton from '$lib/components/ballot/ListSkeleton.svelte';
 
-	const medalColors = {
-		gold: 'bg-yellow-300',
-		silver: 'bg-gray-300',
-		bronze: 'bg-orange-300'
-	};
-
-	let sortByColumn = 'total';
-	let sortAsc = false;
-	let baseResults = [];
-	let sortedResults = [];
+	let table = [];
+	let champs = [];
+	let yearCount = 0;
 	let loading = true;
 	let error = null;
-	let selectedPersonHistory = null;
-	let tooltipPosition = { x: 0, y: 0 };
 
 	onMount(async () => {
-		if (!$user) {
-			await goto('/login');
-			return;
-		}
-
 		try {
-			const medals = {};
-			const history = {}; // Track year-by-year history
-
-			// Get all settings to find available years
-			const settingsRef = ref(db, '/settings');
-			const settingsSnapshot = await get(settingsRef);
-			const settingsData = settingsSnapshot.val() || {};
-
-			// Process each year
-			for (const year of Object.keys(settingsData).sort()) {
-				const settings = settingsData[year];
-				
-				// Skip years where voting is still open
-				if (!settings?.locked) {
-					continue;
-				}
-
-				// Get ballots for this year
-				const ballotsRef = ref(db, `/ballots/${year}`);
-				const ballotsSnapshot = await get(ballotsRef);
-				const ballots = ballotsSnapshot.val() || {};
-
-				// Get results for this year
-				const results = settings?.results || [];
-
-				// Calculate scores for each person
-				const scores = {};
-				Object.keys(ballots).forEach((uid) => {
-					const ballot = ballots[uid];
-					const displayName = ballot.displayName;
-
-					scores[displayName] = 0;
-					results.forEach((winner) => {
-						if (ballot.votes && ballot.votes.indexOf(winner) > -1) {
-							scores[displayName] += 1;
-						}
-					});
-				});
-
-				// Rank the scores
-				const sorted = sortByLodash(Object.entries(scores), ([, score]) => score)
-					.reverse()
-					.map(([name, score], index) => ({
-						displayName: name,
-						score,
-						rank: index + 1
-					}));
-
-				// Handle ties for ranking
-				const ranked = sorted.reduce((acc, entry, i) => {
-					let rank = i + 1;
-					const last = acc[acc.length - 1];
-					if (last && entry.score === last.score) {
-						rank = last.rank;
-					}
-					return [...acc, { ...entry, rank }];
-				}, []);
-
-				// Award medals for 1st, 2nd, 3rd and track history
-				ranked.forEach((entry) => {
-					const name = entry.displayName;
-					if (!medals[name]) {
-						medals[name] = { gold: 0, silver: 0, bronze: 0 };
-						history[name] = [];
-					}
-
-					// Track history entry
-					history[name].push({ year: parseInt(year), rank: entry.rank });
-
-					if (entry.rank === 1) {
-						medals[name].gold += 1;
-					} else if (entry.rank === 2) {
-						medals[name].silver += 1;
-					} else if (entry.rank === 3) {
-						medals[name].bronze += 1;
-					}
-				});
-			}
-
-			// Convert to array and sort by points
-			const results = Object.entries(medals)
-				.map(([name, counts]) => ({
-					displayName: name,
-					gold: counts.gold,
-					silver: counts.silver,
-					bronze: counts.bronze,
-					total: counts.gold * 3 + counts.silver * 2 + counts.bronze * 1,
-					history: history[name]
+			const settings = (await read('settings')) || {};
+			const locked = Object.entries(settings).filter(([, s]) => s?.locked);
+			// Fetch every locked year in parallel.
+			const yearsData = await Promise.all(
+				locked.map(async ([year, s]) => ({
+					year,
+					results: (s.results || []).filter(Boolean),
+					ballots: (await read(`ballots/${year}`)) || {}
 				}))
-				.sort((a, b) => {
-					// Sort by points first, then gold, then silver, then bronze
-					if (b.total !== a.total) return b.total - a.total;
-					if (b.gold !== a.gold) return b.gold - a.gold;
-					if (b.silver !== a.silver) return b.silver - a.silver;
-					if (b.bronze !== a.bronze) return b.bronze - a.bronze;
-					return a.displayName.localeCompare(b.displayName);
-				});
-
-			baseResults = results;
-			sortedResults = results;
-			loading = false;
+			);
+			const scored = yearsData.filter((y) => y.results.length);
+			table = medalTable(scored);
+			champs = champions(scored);
+			yearCount = scored.length;
 		} catch (err) {
-			console.error('Error loading all-time results:', err);
-			error = 'Failed to load results';
+			console.error(err);
+			error = 'Couldn’t load all-time results.';
+		} finally {
 			loading = false;
 		}
 	});
 
-	$: sortedResults = baseResults.length > 0 ? [...baseResults].sort((a, b) => {
-		let aVal = a[sortByColumn];
-		let bVal = b[sortByColumn];
+	let sortKey = 'total';
+	let asc = false;
+	const columns = [
+		{ key: 'displayName', label: 'Name' },
+		{ key: 'gold', label: 'Gold' },
+		{ key: 'silver', label: 'Silver' },
+		{ key: 'bronze', label: 'Bronze' },
+		{ key: 'total', label: 'Points' }
+	];
+	function sortBy(key) {
+		if (sortKey === key) asc = !asc;
+		else (sortKey = key), (asc = key === 'displayName');
+	}
+	$: sorted = [...table].sort((a, b) => {
+		const av = a[sortKey];
+		const bv = b[sortKey];
+		const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+		return asc ? cmp : -cmp;
+	});
+	// Overall standing (by points) regardless of current sort.
+	$: standing = Object.fromEntries(table.map((p, i) => [p.displayName, i + 1]));
 
-		if (typeof aVal === 'string') {
-			const cmp = aVal.localeCompare(bVal);
-			return sortAsc ? cmp : -cmp;
-		} else {
-			return sortAsc ? aVal - bVal : bVal - aVal;
-		}
-	}) : [];
-
-	function handleSort(column) {
-		if (sortByColumn === column) {
-			sortAsc = !sortAsc;
-		} else {
-			sortByColumn = column;
-			sortAsc = false;
-		}
+	let selected = null;
+	let sheetOpen = false;
+	function open(p) {
+		selected = p;
+		sheetOpen = true;
 	}
 
-	function handleNameClick(event, result) {
-		selectedPersonHistory = result;
-		tooltipPosition = {
-			x: event.clientX,
-			y: event.clientY
-		};
-	}
+	const medals = [
+		{ key: 'gold', color: '#C9A227', label: 'Gold' },
+		{ key: 'silver', color: '#A8A9AD', label: 'Silver' },
+		{ key: 'bronze', color: '#B0703A', label: 'Bronze' }
+	];
+	const placeText = (r) => (r === 1 ? '1st' : r === 2 ? '2nd' : r === 3 ? '3rd' : `${r}th`);
 
-	function handleCloseTooltip() {
-		selectedPersonHistory = null;
+	/** Sparkline of finishing position (higher = better) oldest→newest. */
+	function spark(history, w = 72, h = 24) {
+		const pts = [...history].reverse();
+		if (pts.length < 2) return '';
+		const worst = Math.max(...pts.map((p) => p.of || p.rank), 3);
+		return pts
+			.map((p, i) => {
+				const x = (i / (pts.length - 1)) * (w - 4) + 2;
+				const y = ((p.rank - 1) / Math.max(1, worst - 1)) * (h - 4) + 2;
+				return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+			})
+			.join(' ');
 	}
-
-	$: sortIndicator = (column) => sortByColumn === column ? (sortAsc ? '↑' : '↓') : '';
+	$: myName = $user?.displayName;
+	$: showTrend = yearCount >= 3;
 </script>
 
-<svelte:head>
-	<title>All-Time Results</title>
-</svelte:head>
+<svelte:head><title>All-Time Medals</title></svelte:head>
 
-<div class="mx-auto max-w-4xl">
-	<div class="text-center mb-8">
-		<PageHeading>All-Time Medal Count</PageHeading>
-		<p class="text-sm text-gray-600 dark:text-gray-300">Winners across all years <em>(since we moved to an online ballot)</em></p>
+<header class="mb-6">
+	<p class="label-caps">Since we moved online</p>
+	<h1 class="page-title mt-1">All-Time Medals</h1>
+	{#if !loading && yearCount}<p class="mt-1 text-sm text-muted">Gold 3 pts · Silver 2 · Bronze 1 · {yearCount} ceremonies</p>{/if}
+</header>
+
+{#if loading}
+	<ListSkeleton rows={6} />
+{:else if error}
+	<EmptyState icon="alert" title={error}>Check your connection and refresh.</EmptyState>
+{:else if !table.length}
+	<EmptyState icon="medal" title="No results yet">Medals appear after the first ceremony is scored.</EmptyState>
+{:else}
+	<!-- Hall of Champions -->
+	<section class="mb-6" aria-label="Past champions">
+		<h2 class="label-caps mb-2">Hall of Champions</h2>
+		<ul class="scrollbar-none -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+			{#each champs as c (c.year)}
+				<li class="card flex min-w-[140px] shrink-0 items-center gap-3 px-3.5 py-3">
+					<Icon name="trophy" size={20} class="text-gold" />
+					<div class="min-w-0">
+						<p class="tnum text-xs font-semibold text-muted">{c.year}</p>
+						<p class="truncate font-display font-semibold">{c.names.join(' & ')}</p>
+					</div>
+				</li>
+			{/each}
+		</ul>
+	</section>
+
+	<!-- Mobile/tablet: cards -->
+	<div class="lg:hidden">
+		<label class="mb-3 flex items-center justify-end gap-2 text-sm text-muted">
+			Sort by
+			<select bind:value={sortKey} on:change={() => (asc = sortKey === 'displayName')} class="h-9 rounded-sm border border-line bg-surface px-2.5 font-semibold text-fg">
+				{#each columns as c}<option value={c.key}>{c.label}</option>{/each}
+			</select>
+		</label>
+		<ol class="grid gap-2 sm:grid-cols-2">
+			{#each sorted as p (p.displayName)}
+				{@const me = p.displayName === myName}
+				<li>
+					<button
+						on:click={() => open(p)}
+						class="flex w-full items-center gap-3 rounded-md border p-3 text-left transition active:scale-[.99]
+							{me ? 'border-gold-fill bg-gold-fill/10' : 'border-line bg-surface'}"
+					>
+						<span class="tnum w-6 text-center font-display text-lg font-semibold text-muted">{standing[p.displayName]}</span>
+						<Avatar name={p.displayName} size={40} medal={standing[p.displayName] <= 3 ? standing[p.displayName] : null} highlight={me} />
+						<span class="min-w-0 flex-1">
+							<span class="block truncate font-semibold">{p.displayName}</span>
+							<span class="tnum mt-1 flex items-center gap-2.5 text-[13px] text-muted">
+								{#each medals as m}
+									<span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full" style="background:{m.color}" aria-hidden="true" />{p[m.key]}<span class="sr-only"> {m.label}</span></span>
+								{/each}
+							</span>
+						</span>
+						{#if p.history.length >= 3}<svg width="56" height="24" class="shrink-0 text-gold" aria-hidden="true"><path d={spark(p.history, 56, 24)} fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>{/if}
+						<span class="tnum w-9 text-right font-display text-xl font-semibold">{p.total}</span>
+					</button>
+				</li>
+			{/each}
+		</ol>
 	</div>
 
-	{#if loading}
-		<div class="text-center text-gray-600 py-8">
-			<p>Loading results...</p>
-		</div>
-	{:else if error}
-		<div class="text-center text-red-600 mb-4">
-			{error}
-		</div>
-	{:else if sortedResults && sortedResults.length > 0}
-		<div class="overflow-x-auto card-polish p-6">
-			<table class="w-full border-collapse">
-				<thead>
-					<tr class="bg-blue-50 dark:bg-blue-900 border-b-2 border-blue-200 dark:border-blue-700">
-						<th class="px-4 py-3 text-left font-semibold dark:text-gray-200">
-							Rank
+	<!-- Desktop: table -->
+	<div class="card hidden overflow-clip lg:block">
+		<table class="w-full text-left">
+			<thead class="sticky top-16 z-10 border-b border-line bg-surface-2">
+				<tr>
+					<th scope="col" class="w-16 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted">#</th>
+					{#each columns as c}
+						<th scope="col" aria-sort={sortKey === c.key ? (asc ? 'ascending' : 'descending') : 'none'} class="px-2 py-1.5 {c.key === 'displayName' ? '' : 'text-center'}">
+							<button on:click={() => sortBy(c.key)} class="inline-flex h-9 items-center gap-1.5 rounded-sm px-2 text-xs font-semibold uppercase tracking-wider hover:bg-line/50 {sortKey === c.key ? 'text-fg' : 'text-muted'}">
+								{#if c.key in { gold: 1, silver: 1, bronze: 1 }}
+									<span class="h-3 w-3 rounded-full" style="background:{medals.find((m) => m.key === c.key).color}" aria-hidden="true" />
+								{/if}
+								{c.label}
+								<Icon name={sortKey === c.key && asc ? 'arrow-up' : 'arrow-down'} size={13} class={sortKey === c.key ? 'opacity-100' : 'opacity-0'} />
+							</button>
 						</th>
-						<th class="relative px-4 py-3 text-left font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('displayName')}>
-							Name
-							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('displayName')}</span>
-						</th>
-						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('gold')}>
-							<span class="inline-block px-2 py-1 rounded {medalColors.gold}">🥇</span>
-							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('gold')}</span>
-						</th>
-						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('silver')}>
-							<span class="inline-block px-2 py-1 rounded {medalColors.silver}">🥈</span>
-							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('silver')}</span>
-						</th>
-						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('bronze')}>
-							<span class="inline-block px-2 py-1 rounded {medalColors.bronze}">🥉</span>
-							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('bronze')}</span>
-						</th>
-						<th class="relative px-4 py-3 text-center font-semibold cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-800 dark:text-gray-200" on:click={() => handleSort('total')}>
-							Points
-							<span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm">{sortIndicator('total')}</span>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each sortedResults as result, index}
-						<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-							<td class="px-4 py-3 font-bold text-blue-600 dark:text-blue-400">#{index + 1}</td>
-							<td class="px-4 py-3 font-medium dark:text-gray-200">
-								<button
-									on:click={(e) => handleNameClick(e, result)}
-									class="cursor-pointer hover:underline text-left"
-									title="Click to see history"
-								>
-									{result.displayName}
-								</button>
-							</td>
-							<td class="px-4 py-3 text-center">
-								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.gold}">
-									{result.gold}
-								</span>
-							</td>
-							<td class="px-4 py-3 text-center">
-								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.silver}">
-									{result.silver}
-								</span>
-							</td>
-							<td class="px-4 py-3 text-center">
-								<span class="inline-block px-3 py-1 rounded font-bold text-gray-900 {medalColors.bronze}">
-									{result.bronze}
-								</span>
-							</td>
-							<td class="px-4 py-3 text-center font-bold">{result.total}</td>
-						</tr>
 					{/each}
-				</tbody>
-			</table>
-		</div>
-	{:else}
-		<div class="text-center text-gray-600 py-8">
-			No results yet
-		</div>
-	{/if}
-
-	{#if selectedPersonHistory}
-		<div
-			class="fixed bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg p-4 max-w-sm z-50"
-			style="left: {tooltipPosition.x}px; top: {tooltipPosition.y}px; transform: translate(-50%, 10px);"
-		>
-			<div class="flex justify-between items-start mb-3">
-				<h3 class="font-bold text-lg dark:text-gray-100">{selectedPersonHistory.displayName}</h3>
-				<button
-					on:click={handleCloseTooltip}
-					class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold text-xl leading-none"
-				>
-					✕
-				</button>
-			</div>
-			<div class="space-y-2">
-				{#each selectedPersonHistory.history.sort((a, b) => b.year - a.year) as entry (entry.year)}
-					<div class="flex justify-between text-sm dark:text-gray-200">
-						<span class="font-medium">{entry.year}:</span>
-						<span>
-							{#if entry.rank === 1}
-								🥇 1st Place
-							{:else if entry.rank === 2}
-								🥈 2nd Place
-							{:else if entry.rank === 3}
-								🥉 3rd Place
-							{:else}
-								#{entry.rank}
-							{/if}
-						</span>
-					</div>
+					{#if showTrend}<th scope="col" class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted">Trend</th>{/if}
+				</tr>
+			</thead>
+			<tbody class="divide-y divide-line">
+				{#each sorted as p (p.displayName)}
+					{@const me = p.displayName === myName}
+					<tr class="transition hover:bg-surface-2 {me ? 'bg-gold-fill/10' : ''}">
+						<td class="tnum px-4 py-3 font-display text-lg font-semibold text-muted">{standing[p.displayName]}</td>
+						<td class="px-4 py-2">
+							<button on:click={() => open(p)} class="flex items-center gap-3 rounded-sm text-left font-semibold hover:underline">
+								<Avatar name={p.displayName} size={34} medal={standing[p.displayName] <= 3 ? standing[p.displayName] : null} highlight={me} />
+								{p.displayName}
+							</button>
+						</td>
+						{#each medals as m}
+							<td class="tnum px-4 py-3 text-center text-[15px] {p[m.key] ? 'font-semibold' : 'text-muted'}">{p[m.key]}</td>
+						{/each}
+						<td class="tnum px-4 py-3 text-center font-display text-xl font-semibold">{p.total}</td>
+						{#if showTrend}<td class="px-4 py-3">
+							<svg width="88" height="26" class="text-gold" aria-hidden="true"><path d={spark(p.history, 88, 26)} fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>
+						</td>{/if}
+					</tr>
 				{/each}
+			</tbody>
+		</table>
+	</div>
+{/if}
+
+<Sheet bind:open={sheetOpen} title={selected?.displayName || ''}>
+	{#if selected}
+		<div class="mb-4 grid grid-cols-4 gap-2 text-center">
+			{#each medals as m}
+				<div class="rounded-sm bg-surface-2 py-2.5">
+					<p class="tnum font-display text-2xl font-semibold">{selected[m.key]}</p>
+					<p class="flex items-center justify-center gap-1 text-xs text-muted"><span class="h-2 w-2 rounded-full" style="background:{m.color}" />{m.label}</p>
+				</div>
+			{/each}
+			<div class="rounded-sm bg-gold-fill/15 py-2.5">
+				<p class="tnum font-display text-2xl font-semibold text-gold">{selected.total}</p>
+				<p class="text-xs text-muted">Points</p>
 			</div>
 		</div>
-		<div
-			class="fixed inset-0 z-40"
-			on:click={handleCloseTooltip}
-			on:keydown={(e) => e.key === 'Escape' && handleCloseTooltip()}
-		/>
+		<p class="label-caps mb-2">Year by year</p>
+		<ul class="divide-y divide-line">
+			{#each selected.history as h (h.year)}
+				<li class="flex items-center justify-between py-2.5">
+					<span class="tnum font-semibold">{h.year}</span>
+					<span class="flex items-center gap-2 text-sm">
+						{#if h.rank <= 3}<span class="h-2.5 w-2.5 rounded-full" style="background:{medals[h.rank - 1].color}" />{/if}
+						<span class={h.rank <= 3 ? 'font-semibold' : 'text-muted'}>{placeText(h.rank)} of {h.of}</span>
+						<span class="tnum w-12 text-right text-muted">{h.score} pts</span>
+					</span>
+				</li>
+			{/each}
+		</ul>
 	{/if}
-</div>
+</Sheet>

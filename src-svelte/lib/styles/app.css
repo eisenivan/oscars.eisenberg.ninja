@@ -2,115 +2,122 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-	box-sizing: border-box;
+/* ---------- Design tokens: "Ceremony night" ----------
+   Colors are space-separated RGB so Tailwind can apply alpha (bg-gold/20).
+   Components never use `dark:` - themes swap these variables. */
+@layer base {
+	:root {
+		--bg: 250 247 240;
+		--surface: 255 255 255;
+		--surface-2: 242 237 226;
+		--line: 228 220 203;
+		--fg: 26 24 20;
+		--fg-muted: 107 99 85;
+		--gold: 138 106 18;
+		--gold-fill: 201 162 39;
+		--on-gold: 26 24 20;
+		--success: 31 122 77;
+		--danger: 179 38 30;
+		--info: 43 90 158;
+		color-scheme: light;
+	}
+
+	html.dark {
+		--bg: 14 13 11;
+		--surface: 24 22 18;
+		--surface-2: 34 31 25;
+		--line: 46 42 34;
+		--fg: 243 238 227;
+		--fg-muted: 163 154 136;
+		--gold: 227 196 107;
+		--gold-fill: 201 162 39;
+		--on-gold: 26 24 20;
+		--success: 92 196 142;
+		--danger: 242 134 126;
+		--info: 141 180 240;
+		color-scheme: dark;
+	}
+
+	html {
+		-webkit-text-size-adjust: 100%;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	body {
+		@apply bg-bg font-sans text-fg antialiased;
+		min-height: 100dvh;
+		font-feature-settings: 'cv11', 'ss01';
+	}
+
+	h1,
+	h2,
+	h3 {
+		@apply font-display;
+		font-optical-sizing: auto;
+		letter-spacing: -0.01em;
+	}
+
+	:focus-visible {
+		outline: 2px solid rgb(var(--gold-fill));
+		outline-offset: 2px;
+		border-radius: 6px;
+	}
+
+	::selection {
+		background: rgb(var(--gold-fill) / 0.35);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
+	}
 }
 
-body {
-	margin: 0;
-	padding: 0;
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	background-color: #f9fafb;
-	background-image: 
-		radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-	background-size: 40px 40px;
-	color: #1f2937;
-	transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-html.dark body {
-	background-color: #0f172a;
-	background-image: 
-		radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
-	color: #f3f4f6;
-}
-
-code {
-	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-h1, h2, h3, h4, h5, h6 {
-	color: #1f2937;
-	transition: color 0.3s ease;
-}
-
-html.dark h1,
-html.dark h2,
-html.dark h3,
-html.dark h4,
-html.dark h5,
-html.dark h6 {
-	color: #f3f4f6;
-}
-
-/* Global section styling */
-section {
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-	transition: box-shadow 0.3s ease;
-	background-color: #ffffff;
-	border-radius: 0.5rem;
-}
-
-section:hover {
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-}
-
-html.dark section {
-	background-color: #1e293b;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-html.dark section:hover {
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Utility classes for polish */
 @layer components {
-	.card-polish {
-		@apply backdrop-blur-sm rounded-lg shadow-sm;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-		transition: box-shadow 0.3s ease;
-		background-color: #ffffff;
+	.card {
+		@apply rounded-md border border-line bg-surface shadow-card;
+	}
+	html.dark .card {
+		box-shadow: none;
 	}
 
-	.card-polish:hover {
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+	.label-caps {
+		@apply text-xs font-semibold uppercase tracking-[0.14em] text-muted;
 	}
 
-	html.dark .card-polish {
-		background-color: #1e293b;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+	.page-title {
+		@apply font-display text-[26px] font-semibold leading-tight sm:text-3xl lg:text-4xl;
 	}
 
-	html.dark .card-polish:hover {
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+	.tnum {
+		font-variant-numeric: tabular-nums;
 	}
 
-	.bg-pattern-subtle {
-		background-image: 
-			radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-		background-size: 40px 40px;
+	.skeleton {
+		background: linear-gradient(
+			90deg,
+			rgb(var(--surface-2)) 0px,
+			rgb(var(--line)) 120px,
+			rgb(var(--surface-2)) 240px
+		);
+		background-size: 800px 100%;
+		@apply animate-shimmer rounded-sm;
 	}
 
-	html.dark .bg-pattern-subtle {
-		background-image: 
-			radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+	.scrollbar-none {
+		scrollbar-width: none;
+	}
+	.scrollbar-none::-webkit-scrollbar {
+		display: none;
 	}
 
-	.bg-pattern-blue {
-		background-image: 
-			linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-			radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-		background-size: auto, 30px 30px;
-	}
-
-	html.dark .bg-pattern-blue {
-		background-image: 
-			linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-			radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+	.pb-safe {
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 }
-

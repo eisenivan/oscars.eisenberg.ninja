@@ -1,97 +1,57 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { user } from '$lib/services/auth';
-	import { signUpWithEmail } from '$lib/services/auth';
-	import PageHeading from '$lib/components/PageHeading.svelte';
+	import { signUp, authMessage } from '$lib/auth.js';
+	import AuthCard from '$lib/components/shell/AuthCard.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
+	let displayName = '';
 	let email = '';
 	let password = '';
-	let confirmPassword = '';
-	let displayName = '';
+	let confirm = '';
 	let error = '';
+	let busy = false;
+	let touchedConfirm = false;
 
-	const handleSignUp = async (e) => {
-		e.preventDefault();
+	$: mismatch = touchedConfirm && confirm && password !== confirm;
+	$: short = password && password.length < 6;
+
+	async function submit() {
 		error = '';
-
-		if (password !== confirmPassword) {
-			error = 'Passwords do not match';
-			return;
-		}
-
+		touchedConfirm = true;
+		if (!displayName.trim()) return (error = 'Add the name you want on the leaderboard.');
+		if (password !== confirm) return (error = 'Passwords don’t match.');
+		busy = true;
 		try {
-			await signUpWithEmail(email, password, displayName);
-			await goto('/');
+			await signUp(email.trim(), password, displayName.trim());
+			await goto('/', { invalidateAll: true });
 		} catch (err) {
-			error = err.message;
-			console.warn(err);
+			error = authMessage(err);
+		} finally {
+			busy = false;
 		}
-	};
-
-	if ($user) {
-		goto('/');
 	}
 </script>
 
-<div class="w-full mt-2 max-w-xs m-auto card-polish p-5 bg-blue-100">
-	<div class="mx-auto text-center mb-5">
-		<PageHeading>Register</PageHeading>
-	</div>
-	<form on:submit={handleSignUp}>
+<svelte:head><title>Create account · Oscars</title></svelte:head>
+
+<AuthCard title="Join the party" subtitle="Make an account to fill out your ballot.">
+	<form on:submit|preventDefault={submit} class="space-y-4" novalidate>
 		{#if error}
-			<div class="text-red-600 text-sm mb-4">{error}</div>
+			<p class="flex items-start gap-2 rounded-sm bg-danger/10 p-3 text-sm text-danger" role="alert"><Icon name="alert" size={18} class="mt-px" />{error}</p>
 		{/if}
-		<div>
-			<label class="block mb-2 text-blue-500" for="displayName">Display Name</label>
-			<input
-				class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-				type="text"
-				name="displayName"
-				bind:value={displayName}
-				required
-			/>
-		</div>
-		<div>
-			<label class="block mb-2 text-blue-500" for="email">Email</label>
-			<input
-				class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-				type="email"
-				name="email"
-				bind:value={email}
-				required
-			/>
-		</div>
-		<div>
-			<label class="block mb-2 text-blue-500" for="password">Password</label>
-			<input
-				class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-				type="password"
-				name="password"
-				bind:value={password}
-				required
-			/>
-		</div>
-		<div>
-			<label class="block mb-2 text-blue-500" for="confirmPassword">Confirm Password</label>
-			<input
-				class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-				type="password"
-				name="confirmPassword"
-				bind:value={confirmPassword}
-				required
-			/>
-		</div>
-		<div>
-			<button
-				type="submit"
-				class="block text-center bg-blue-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto"
-			>
-				Register
-			</button>
-		</div>
-		<div class="mb-3">
-			<p class="text-xs italic text-center">Already have an account?</p>
-			<a href="/login" class="block text-center mx-auto text-xs underline">Login</a>
-		</div>
+		<TextField label="Your name" hint="This is how you’ll appear on the leaderboard." bind:value={displayName} autocomplete="nickname" required />
+		<TextField label="Email" type="email" bind:value={email} autocomplete="email" inputmode="email" required />
+		<TextField label="Password" type="password" bind:value={password} autocomplete="new-password" error={short ? 'Use at least 6 characters.' : ''} required />
+		<TextField label="Confirm password" type="password" bind:value={confirm} autocomplete="new-password" on:blur={() => (touchedConfirm = true)} error={mismatch ? 'Passwords don’t match.' : ''} required>
+			{#if confirm && password === confirm}
+				<p class="flex items-center gap-1.5 text-[13px] text-success"><Icon name="check" size={14} /> Passwords match</p>
+			{/if}
+		</TextField>
+		<Button type="submit" size="lg" full loading={busy}>Create account</Button>
 	</form>
-</div>
+	<svelte:fragment slot="footer">
+		Already have an account? <a href="/login" class="font-semibold text-gold hover:underline">Log in</a>
+	</svelte:fragment>
+</AuthCard>

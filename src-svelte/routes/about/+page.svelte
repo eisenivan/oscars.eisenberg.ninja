@@ -1,116 +1,59 @@
 <script>
-	import PageHeading from '$lib/components/PageHeading.svelte';
+	import { user } from '$lib/auth.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+
+	const steps = [
+		{ icon: 'ballot', title: 'Fill out your ballot', body: 'Pick one nominee in every category. Picks save as you tap, and you can change them until voting closes.' },
+		{ icon: 'lock', title: 'Voting closes', body: 'Right before the ceremony, ballots lock. From then on, everyone can see everyone’s picks.' },
+		{ icon: 'trophy', title: 'Follow along live', body: 'As each envelope opens, the leaderboard updates. One point per correct pick; ties share a rank.' },
+		{ icon: 'medal', title: 'Chase the medals', body: 'Finish 1st, 2nd or 3rd for gold (3 pts), silver (2) or bronze (1) on the all-time board.' }
+	];
+	const tips = [
+		['compare', 'Compare ballots', 'Open anyone’s ballot from the leaderboard and switch to “Compare” to see where you differ — and which differences are still in play.'],
+		['users', 'Ties', 'Equal scores share a rank (1, 2, 2, 4). The next result usually breaks it.'],
+		['user', 'Your name', 'The name on your profile is what everyone sees. Change it any time.'],
+		['sparkles', 'Add to Home Screen', 'On your phone, use Share → Add to Home Screen for a full-screen app on Oscar night.']
+	];
 </script>
 
-<svelte:head>
-	<title>About</title>
-</svelte:head>
+<svelte:head><title>How it works · Oscars</title></svelte:head>
 
-<div class="mx-auto max-w-3xl">
-	<div class="text-center mb-12">
-		<PageHeading>About Oscars Voting</PageHeading>
-		<p class="text-sm text-gray-600 dark:text-gray-300">Learn about how to use this application</p>
-	</div>
+<div class="mx-auto max-w-4xl">
+	<header class="mb-8 text-center sm:mb-12">
+		<p class="label-caps">Est. 2020</p>
+		<h1 class="mt-2 font-display text-4xl font-semibold sm:text-5xl">How it works</h1>
+		<p class="mx-auto mt-3 max-w-lg text-[17px] text-muted">The Eisenberg Oscar party ballot — born from necessity, kept for the trash talk.</p>
+	</header>
 
-	<div class="space-y-8">
-		<!-- My Ballot Section -->
-		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-blue-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-blue-600 dark:text-blue-400">📋 My Ballot</h2>
-			<p class="text-gray-700 dark:text-gray-300 mb-4">
-				Submit your Oscar predictions for each category. Select your picks for Best Picture, Best Director, Best Actor, and other award categories. Your selections are saved in real-time to your account.
-			</p>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li>Vote in multiple categories</li>
-				<li>Update your picks anytime before voting closes</li>
-				<li>See your current score in real-time if results have been announced</li>
-			</ul>
-		</section>
+	<ol class="grid gap-4 sm:grid-cols-2">
+		{#each steps as s, i}
+			<li class="card relative p-5 sm:p-6">
+				<span class="absolute right-5 top-4 font-display text-5xl font-semibold text-surface-2" aria-hidden="true">{i + 1}</span>
+				<span class="mb-4 grid h-11 w-11 place-items-center rounded-full bg-gold-fill/15 text-gold"><Icon name={s.icon} size={22} /></span>
+				<h2 class="text-xl font-semibold">{s.title}</h2>
+				<p class="mt-1.5 text-[15px] leading-relaxed text-muted">{s.body}</p>
+			</li>
+		{/each}
+	</ol>
 
-		<!-- Leaderboard Section -->
-		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-green-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-green-600 dark:text-green-400">🏆 Leaderboard</h2>
-			<p class="text-gray-700 dark:text-gray-300 mb-4">
-				View live rankings of all participants as awards are announced. Rankings update automatically as results come in, showing each person's current score based on correct predictions.
-			</p>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li>See current standings for the year</li>
-				<li>Browse leaderboards from past years</li>
-				<li>Scores calculated as results are announced</li>
-				<li>Tied scores display with the same rank</li>
-				<li><strong>Once voting closes:</strong> Click on any participant's name to view their full ballot</li>
-			</ul>
-		</section>
+	<h2 class="mb-4 mt-10 text-2xl font-semibold">Good to know</h2>
+	<ul class="card divide-y divide-line">
+		{#each tips as [icon, title, body]}
+			<li class="flex gap-4 p-5">
+				<Icon name={icon} size={20} class="mt-0.5 text-gold" />
+				<div>
+					<p class="font-semibold">{title}</p>
+					<p class="mt-0.5 text-[15px] leading-relaxed text-muted">{body}</p>
+				</div>
+			</li>
+		{/each}
+	</ul>
 
-		<!-- Comparing Ballots Section -->
-		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-orange-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-orange-600 dark:text-orange-400">🔍 Compare Ballots</h2>
-			<p class="text-gray-700 dark:text-gray-300 mb-4">
-				After voting closes, you can view other participants' ballots and compare them with your own predictions.
-			</p>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li>Click any name on the leaderboard to view their ballot</li>
-				<li>Check the <strong>"Compare with my ballot"</strong> box to highlight differences</li>
-				<li>Categories where you picked differently are highlighted in yellow</li>
-				<li>See how many picks you have in common with others</li>
-				<li>The counter shows different categories that haven't been announced yet</li>
-			</ul>
-		</section>
-
-		<!-- All-Time Results Section -->
-		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-yellow-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-yellow-600 dark:text-yellow-400">🥇 All-Time Results</h2>
-			<p class="text-gray-700 dark:text-gray-300 mb-4">
-				View a comprehensive medal count of everyone who has finished in the top 3 across all years of voting. Your performance is tracked with weighted points:
-			</p>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li><strong>🥇 Gold (1st place):</strong> 3 points per win</li>
-				<li><strong>🥈 Silver (2nd place):</strong> 2 points per finish</li>
-				<li><strong>🥉 Bronze (3rd place):</strong> 1 point per finish</li>
-				<li>Sort by any column to find top performers</li>
-			</ul>
-		</section>
-
-		<!-- Profile Section -->
-		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-purple-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-purple-600 dark:text-purple-400">👤 Profile</h2>
-			<p class="text-gray-700 dark:text-gray-300 mb-4">
-				Manage your account settings and personal information.
-			</p>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li>Update your display name</li>
-				<li>Change your email address</li>
-				<li>Reset your password</li>
-				<li>View your account details</li>
-			</ul>
-		</section>
-
-		<!-- Scoring Section -->
-		<section class="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border-l-4 border-red-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-red-600 dark:text-red-400">📊 How Scoring Works</h2>
-			<p class="text-gray-700 dark:text-gray-300 mb-4">
-				You earn one point for each correct prediction. The leaderboard updates as awards are announced:
-			</p>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li>Each correct pick = 1 point toward your current year score</li>
-				<li>Leaderboard ranks are sorted by total points</li>
-				<li>For all-time results, top 3 finishes are tracked with weighted points</li>
-				<li>All participants start at 0 points each year</li>
-			</ul>
-		</section>
-
-		<!-- Tips Section -->
-		<section class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6 border-l-4 border-blue-500 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold mb-3 text-blue-600 dark:text-blue-400">💡 Tips for Success</h2>
-			<ul class="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
-				<li>Submit your ballot early and update as you refine your picks</li>
-				<li>Check the leaderboard throughout the ceremony to track progress</li>
-				<li>Remember that voting locks when set by the administrator</li>
-				<li>Browse all-time results to see who the top performers have been historically</li>
-				<li>Your display name appears on the leaderboard, so choose wisely!</li>
-			</ul>
-		</section>
-	</div>
+	{#if !$user}
+		<div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+			<Button href="/register" size="lg">Create an account</Button>
+			<Button href="/login" size="lg" variant="secondary">Log in</Button>
+		</div>
+	{/if}
 </div>
-
-<style>
-</style>

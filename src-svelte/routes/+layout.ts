@@ -1,28 +1,25 @@
 import { redirect } from '@sveltejs/kit';
-import { user, initializing } from '$lib/services/auth';
 import { get } from 'svelte/store';
+import { user, authReady } from '$lib/auth.js';
+
+// Pure client-side app served by the adapter-static fallback.
+export const ssr = false;
+export const prerender = false;
+
+const PUBLIC = ['/login', '/register', '/about'];
+const AUTH_ONLY = ['/login', '/register'];
 
 export async function load({ url }) {
-	const publicRoutes = ['/login', '/register'];
-	const isPublicRoute = publicRoutes.includes(url.pathname);
+	await authReady;
+	const u = get(user);
+	const path = url.pathname;
 
-	// Get current values
-	const authUser = get(user);
-	const isInitializing = get(initializing);
-
-	// If still initializing, just return (let the page show loader)
-	if (isInitializing) {
-		return {
-			user: authUser
-		};
+	if (!u && !PUBLIC.includes(path)) {
+		const next = path === '/' ? '' : `?next=${encodeURIComponent(path + url.search)}`;
+		throw redirect(307, `/login${next}`);
 	}
-
-	// Only redirect authenticated users away from login/register
-	if (authUser && isPublicRoute) {
-		throw redirect(302, '/');
+	if (u && AUTH_ONLY.includes(path)) {
+		throw redirect(307, url.searchParams.get('next') || '/');
 	}
-
-	return {
-		user: authUser
-	};
+	return { signedIn: !!u };
 }

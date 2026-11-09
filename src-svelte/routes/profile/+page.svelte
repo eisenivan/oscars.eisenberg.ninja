@@ -1,121 +1,118 @@
 <script>
+	import { user, updateDisplayName, changeEmail, resetPassword, signOut, authMessage } from '$lib/auth.js';
+	import { syncBallotName, YEAR } from '$lib/data/queries.js';
+	import { themeMode } from '$lib/stores/theme.js';
+	import { toast } from '$lib/stores/toast.js';
 	import { goto } from '$app/navigation';
-	import { user } from '$lib/services/auth';
-	import { db, auth, sendPasswordResetEmail } from '$lib/services/auth';
-	import Loader from '$lib/components/Loader.svelte';
-	import PageHeading from '$lib/components/PageHeading.svelte';
-	import { ref } from 'firebase/database';
-	import { updateProfile as updateFirebaseProfile, updateEmail } from 'firebase/auth';
+	import TextField from '$lib/components/ui/TextField.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Segmented from '$lib/components/ui/Segmented.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
-	let displayName = '';
-	let email = '';
-	let loading = false;
-	let resetMessage = '';
-	let resetLoading = false;
+	let name = $user.displayName || '';
+	let email = $user.email || '';
+	let savingName = false;
+	let savingEmail = false;
+	let sendingReset = false;
+	let nameError = '';
+	let emailError = '';
 
-	$: if ($user) {
-		displayName = $user.displayName || '';
-		email = $user.email || '';
-	}
-
-	const updateProfile = async (e) => {
-		e.preventDefault();
-		loading = true;
-
+	async function saveName() {
+		nameError = '';
+		const n = name.trim();
+		if (!n) return (nameError = 'Your name can’t be empty.');
+		savingName = true;
 		try {
-			if (displayName && displayName !== $user.displayName) {
-				await updateFirebaseProfile($user, { displayName });
-			}
-
-			if (email && email !== $user.email) {
-				await updateEmail($user, email);
-			}
-
-			loading = false;
-			await goto('/');
-		} catch (error) {
-			console.error('Error updating profile:', error);
-			loading = false;
-		}
-	};
-
-	const handlePasswordReset = async () => {
-		resetMessage = '';
-		resetLoading = true;
-		try {
-			await sendPasswordResetEmail($user.email);
-			resetMessage = 'Password reset email sent! Check your inbox. You may need to check your spam folder.';
-		} catch (error) {
-			console.error('Error sending reset email:', error);
-			resetMessage = error.message || 'Error sending password reset email';
+			await updateDisplayName(n);
+			await syncBallotName(YEAR, $user, n);
+			toast('Name updated', { tone: 'success' });
+		} catch (err) {
+			nameError = authMessage(err);
 		} finally {
-			resetLoading = false;
+			savingName = false;
 		}
-	};
-
-	if (!$user) {
-		goto('/login');
 	}
+
+	async function saveEmail() {
+		emailError = '';
+		savingEmail = true;
+		try {
+			await changeEmail(email.trim());
+			toast('Check your inbox', { tone: 'success', detail: `Click the link we sent to ${email.trim()} to confirm the change.`, timeout: 8000 });
+		} catch (err) {
+			emailError = authMessage(err);
+		} finally {
+			savingEmail = false;
+		}
+	}
+
+	async function reset() {
+		sendingReset = true;
+		try {
+			await resetPassword($user.email);
+			toast('Password reset email sent', { tone: 'success', detail: 'Check your spam folder if it doesn’t show up.' });
+		} catch (err) {
+			toast(authMessage(err), { tone: 'danger' });
+		} finally {
+			sendingReset = false;
+		}
+	}
+
+	const themes = [
+		{ value: 'system', label: 'System', icon: 'monitor' },
+		{ value: 'light', label: 'Light', icon: 'sun' },
+		{ value: 'dark', label: 'Dark', icon: 'moon' }
+	];
+	$: nameChanged = name.trim() && name.trim() !== $user.displayName;
+	$: emailChanged = email.trim() && email.trim() !== $user.email;
 </script>
 
-<svelte:head>
-	<title>Your Profile</title>
-</svelte:head>
+<svelte:head><title>Profile · Oscars</title></svelte:head>
 
-<div class="w-full mt-2 max-w-sm m-auto card-polish p-5 bg-blue-100">
-	<header>
-		<div class="mx-auto text-center mb-5">
-			<PageHeading>Your Profile</PageHeading>
+<div class="mx-auto max-w-2xl">
+	<header class="mb-6 flex items-center gap-4">
+		<Avatar name={name || $user.email} size={64} />
+		<div class="min-w-0">
+			<p class="label-caps">Profile</p>
+			<h1 class="page-title mt-0.5 truncate">{$user.displayName || 'Your profile'}</h1>
 		</div>
 	</header>
-	<form on:submit={updateProfile}>
-		<div>
-			<label class="block text-blue-500" for="displayName">Display Name</label>
-			<div class="text-xs mb-2 text-black-100 italic">This will be the name that shows up on the leaderboard. Change this to your name.</div>
-			<input
-				bind:value={displayName}
-				class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-				type="text"
-				name="displayName"
-			/>
-		</div>
-		<div>
-			<label class="block mb-2 text-blue-500" for="email">Email</label>
-			<input
-				bind:value={email}
-				class="w-full p-2 mb-6 text-blue-700 border-b-2 border-blue-500 outline-none focus:bg-gray-300"
-				type="email"
-				name="email"
-			/>
-		</div>
-		<div>
-			<button
-				type="submit"
-				class="block text-center bg-blue-700 hover:bg-indigo-700 text-white font-bold py-2 px-4 mb-6 rounded mx-auto w-max-md"
-				disabled={loading}
-			>
-				{#if loading}
-					<Loader color="#FFF" style="height: 20px" />
-				{:else}
-					Update Profile
-				{/if}
-			</button>
-		</div>
-	</form>
 
-	<div>
-		{#if resetMessage}
-			<div class="text-sm mb-4 {resetMessage.includes('sent') ? 'text-green-600' : 'text-red-600'}">
-				{resetMessage}
+	<div class="space-y-4">
+		<section class="card p-5 sm:p-6">
+			<form on:submit|preventDefault={saveName} class="space-y-4">
+				<TextField label="Display name" bind:value={name} autocomplete="nickname" error={nameError} />
+				<div class="flex items-center gap-3 rounded-sm bg-surface-2 px-3 py-2.5 text-sm">
+					<Avatar name={name} size={28} />
+					<span class="text-muted">On the leaderboard as <strong class="text-fg">{name.trim() || '—'}</strong></span>
+				</div>
+				<div class="flex justify-end"><Button type="submit" loading={savingName} disabled={!nameChanged}>Save name</Button></div>
+			</form>
+		</section>
+
+		<section class="card p-5 sm:p-6">
+			<form on:submit|preventDefault={saveEmail} class="space-y-4">
+				<TextField label="Email" type="email" bind:value={email} autocomplete="email" error={emailError} hint="We’ll send a confirmation link to the new address. Your email changes after you click it." />
+				<div class="flex justify-end"><Button type="submit" variant="secondary" loading={savingEmail} disabled={!emailChanged}>Change email</Button></div>
+			</form>
+		</section>
+
+		<section class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+			<div>
+				<h2 class="text-lg font-semibold">Password</h2>
+				<p class="text-sm text-muted">Get a link to set a new password.</p>
 			</div>
-		{/if}
-		<button
-			type="button"
-			on:click={handlePasswordReset}
-			disabled={resetLoading}
-			class="block hover:text-indigo-500 text-blue-500 font-bold py-2 px-4 mb-6 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
-		>
-			{resetLoading ? 'Sending...' : 'Reset Password?'}
-		</button>
+			<Button variant="secondary" loading={sendingReset} on:click={reset}>Send reset email</Button>
+		</section>
+
+		<section class="card p-5 sm:p-6">
+			<h2 class="mb-3 text-lg font-semibold">Appearance</h2>
+			<Segmented options={themes} bind:value={$themeMode} label="Theme" full />
+		</section>
+
+		<Button variant="danger" full size="lg" on:click={async () => { await signOut(); goto('/login'); }}>
+			<Icon name="logout" size={18} /> Log out
+		</Button>
 	</div>
 </div>

@@ -1,176 +1,144 @@
 <script>
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { user } from '$lib/services/auth';
-	import { db } from '$lib/services/auth';
-	import { keyFromName, isSelected } from '$lib/helpers';
-	import Loader from '$lib/components/Loader.svelte';
-	import PageHeading from '$lib/components/PageHeading.svelte';
-	import { ref, get } from 'firebase/database';
+	import { user } from '$lib/auth.js';
+	import { settingsFor, categoriesFor, ballotsFor } from '$lib/data/queries.js';
+	import { byCategory } from '$lib/domain/keys.js';
+	import { buildLeaderboard } from '$lib/domain/scoring.js';
+	import CategoryCard from '$lib/components/ballot/CategoryCard.svelte';
+	import BallotSkeleton from '$lib/components/ballot/BallotSkeleton.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Segmented from '$lib/components/ui/Segmented.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	export let data;
+	$: ({ year, uid } = data);
+	$: settings = settingsFor(year);
+	$: cats = categoriesFor(year);
+	$: ballots = ballotsFor(year);
 
-	const year = data.year;
-	const uid = data.uid;
+	$: isMe = uid === $user.uid;
+	$: theirs = $ballots.value?.[uid];
+	$: mineB = $ballots.value?.[$user.uid];
+	$: them = byCategory(theirs?.votes);
+	$: me = byCategory(mineB?.votes);
+	$: winners = byCategory($settings.results);
+	$: board = buildLeaderboard($ballots.value || {}, $settings.results);
+	$: row = board.find((r) => r.uid === uid);
+	$: name = theirs?.displayName || 'Ballot';
+	$: canCompare = !isMe && mineB?.votes?.length;
 
-	let categories = [];
-	let ballotVotes = [];
-	let hasBallot = false;
-	let displayName = '';
-	let results = [];
-	let locked = false;
-	let loading = true;
-	let notAvailable = false;
-	let myBallotVotes = [];
-	let compareMode = false;
+	let mode = 'theirs';
+	const modes = [
+		{ value: 'theirs', label: 'Their ballot' },
+		{ value: 'compare', label: 'Compare' },
+		{ value: 'diff', label: 'Differences' }
+	];
 
-	onMount(async () => {
-		if (!$user) {
-			await goto('/login');
-			return;
-		}
+	$: categories = $cats.value;
+	$: same = categories.filter((c) => them[c.id] && them[c.id] === me[c.id]).length;
+	$: different = categories.filter((c) => them[c.id] !== me[c.id]);
+	$: pendingDiff = different.filter((c) => !winners[c.id]).length;
+	$: shown = mode === 'diff' ? different : categories;
+	$: candidate = (cat, key) => cat.candidates.find((c) => c.key === key);
 
-		try {
-			const settingsSnap = await get(ref(db, `/settings/${year}`));
-			const settings = settingsSnap.val() || {};
-			locked = settings.locked || false;
-			results = settings.results || [];
-
-			if (!locked) {
-				notAvailable = true;
-				loading = false;
-				return;
-			}
-
-			const categoriesSnap = await get(ref(db, `/groups/${year}`));
-			categories = categoriesSnap.val() || [];
-
-			const ballotSnap = await get(ref(db, `/ballots/${year}/${uid}`));
-			const ballotData = ballotSnap.val();
-
-			if (ballotData) {
-				displayName = ballotData.displayName || 'Unknown';
-				ballotVotes = ballotData.votes || [];
-				hasBallot = ballotVotes.length > 0;
-			} else {
-				notAvailable = true;
-			}
-
-			// Load logged-in user's ballot for comparison
-			const myBallotSnap = await get(ref(db, `/ballots/${year}/${$user.uid}`));
-			const myBallotData = myBallotSnap.val();
-			if (myBallotData) {
-				myBallotVotes = myBallotData.votes || [];
-			}
-		} catch (error) {
-			console.error('Error loading ballot:', error);
-			notAvailable = true;
-		} finally {
-			loading = false;
-		}
-	});
-
-	const selectedKeyForCategory = (cat) => ballotVotes.find((vote) => vote.startsWith(`${cat.id}__`));
-
-	const candidateForKey = (cat, key) =>
-		cat?.candidates?.find((candidate) => `${cat.id}__${keyFromName(candidate.text)}` === key) || null;
+	$: loading = $settings.loading || $cats.loading || $ballots.loading;
 </script>
 
-<svelte:head>
-	<title>{displayName ? `${displayName}'s Ballot` : 'Ballot'} - {year}</title>
-</svelte:head>
+<svelte:head><title>{name} · {year}</title></svelte:head>
+
+<a href="/scoreboard/{year}" class="mb-4 inline-flex h-9 items-center gap-1 rounded-sm pr-2 text-sm font-medium text-muted hover:text-fg">
+	<Icon name="chevron-left" size={18} /> Leaderboard
+</a>
 
 {#if loading}
-	<Loader />
+	<BallotSkeleton />
+{:else if !$settings.locked || !theirs}
+	<EmptyState icon="lock" title="Ballot not available">
+		{#if !$settings.locked}Ballots are private until voting closes.{:else}This person didn’t submit a ballot for {year}.{/if}
+		<svelte:fragment slot="action"><Button href="/scoreboard/{year}" variant="secondary">Back to leaderboard</Button></svelte:fragment>
+	</EmptyState>
 {:else}
-	<div>
-		<PageHeading>{displayName ? `${displayName}'s Ballot` : 'Ballot'} - {year}</PageHeading>
-		<a href={`/scoreboard/${year}`} class="text-blue-600 dark:text-blue-400 hover:underline text-sm text-left mt-2">← Back to Leaderboard</a>
-
-		{#if notAvailable}
-			<div class="mx-auto max-w-lg text-center mt-6 text-red-600 dark:text-red-400">
-				Ballot is not available. It may be unpublished, not submitted, or the year is not locked.
-			</div>
-		{:else}
-			{#if myBallotVotes.length > 0}
-				{@const differentCount = categories.filter(cat => {
-					const winnerKey = results.find((x) => x && x.indexOf(cat.id) > -1);
-					const userKey = selectedKeyForCategory(cat);
-					const myKey = myBallotVotes.find(vote => vote.startsWith(`${cat.id}__`));
-					return !winnerKey && userKey !== myKey;
-				}).length}
-				<div class="mt-4 flex items-center justify-between">
-					<div class="flex items-center">
-						<input
-							type="checkbox"
-							id="compare-checkbox"
-							bind:checked={compareMode}
-							class="mr-2"
-						/>
-						<label for="compare-checkbox" class="text-sm text-gray-700 dark:text-gray-300">
-							Compare with my ballot
-						</label>
-					</div>
-					{#if compareMode}
-						<div class="text-sm text-gray-700 dark:text-gray-300">
-							Remaining different categories: <span class="font-semibold">{differentCount}</span>
-						</div>
-					{/if}
+	<header class="mb-6 flex flex-wrap items-center gap-4">
+		<Avatar name={name} size={56} medal={row && row.rank <= 3 && $settings.results.length ? row.rank : null} highlight={isMe} />
+		<div class="min-w-0 flex-1">
+			<p class="label-caps">{year} ballot</p>
+			<h1 class="page-title mt-0.5 truncate">{isMe ? 'Your ballot' : name}</h1>
+		</div>
+		{#if row && $settings.results.length}
+			<div class="flex gap-6 text-right">
+				<div>
+					<p class="tnum font-display text-3xl font-semibold leading-none text-gold">#{row.rank}</p>
+					<p class="mt-1 text-xs text-muted">of {board.length}</p>
 				</div>
-			{/if}
-			<div class="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 border-blue-700 border-8 rounded-sm border-opacity-10 card-polish p-4 bg-blue-100">
-				{#each categories as cat (cat.id)}
-					{@const winnerKey = results.find((x) => x && x.indexOf(cat.id) > -1)}
-					{@const winningCandidate = winnerKey ? candidateForKey(cat, winnerKey) : null}
-					{@const userKey = selectedKeyForCategory(cat)}
-					{@const userWon = hasBallot && locked && results.length > 0 && userKey && userKey === winnerKey}
-					{@const resultClass = hasBallot && locked && results.length > 0 && winnerKey && userWon ? 'text-green-600' : hasBallot && locked && results.length > 0 && winnerKey && !userWon ? 'text-red-600' : ''}
-					{@const resultSymbol = hasBallot && locked && results.length > 0 && winnerKey && userWon ? '✓' : hasBallot && locked && results.length > 0 && winnerKey && !userWon ? '✕' : ''}
-					<div class="mb-6">
-						<h2 class="text-md font-semibold mb-2 uppercase">
-							{cat.name}
-							<i class={resultClass}>{resultSymbol}</i>
-						</h2>
-						{#if !hasBallot && locked && results.length > 0 && winnerKey && winningCandidate}
-							<div class="text-xs mt-1 text-blue-700 dark:text-blue-400">Winner: {winningCandidate.text}</div>
-						{/if}
-						{#each cat.candidates as candidate (candidate.text)}
-							{@const key = `${cat.id}__${keyFromName(candidate.text)}`}
-							{@const isWinner = results.indexOf(key) > -1}
-							{@const isMyPick = isSelected(myBallotVotes, key)}
-					{@const isDifferentPick = compareMode && isSelected(ballotVotes, key) !== isMyPick}
-							<label
-								class={`border-solid block pl-2 ml-2 border-l border-indigo-200 py-1 ${
-									isWinner ? resultClass : ''
-								} ${isDifferentPick ? 'bg-yellow-100 dark:bg-yellow-800/50' : ''}`}
-								for={key}
-							>
-								<div class="flex items-center">
-									<input
-										disabled={true}
-										checked={isSelected(ballotVotes, key)}
-										class="mr-2"
-										type="radio"
-										name={cat.id}
-										value={key}
-										id={key}
-									/>
-									<span class="uppercase">{candidate.text}</span>
-									{#if compareMode && isMyPick && !isSelected(ballotVotes, key)}
-										<span class="ml-2 inline-block px-2 py-0.5 text-xs rounded bg-orange-200 text-orange-900 dark:bg-orange-900 dark:text-orange-200">My Pick</span>
-									{/if}
-									{#if locked && results.length > 0 && isWinner}
-										<span class="ml-2 inline-block px-2 py-0.5 text-xs rounded bg-blue-200 text-blue-900 dark:bg-blue-900 dark:text-blue-300">Winner</span>
-									{/if}
-								</div>
-								{#if candidate.subtext}
-									<span class="block ml-6 pb-2 font-light text-xs italic">{candidate.subtext}</span>
-								{/if}
-							</label>
-						{/each}
-					</div>
-				{/each}
+				<div>
+					<p class="tnum font-display text-3xl font-semibold leading-none">{row.score}</p>
+					<p class="mt-1 text-xs text-muted">of {$settings.results.length}</p>
+				</div>
 			</div>
 		{/if}
-	</div>
+	</header>
+
+	{#if canCompare}
+		<div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+			<div class="w-full sm:w-auto"><Segmented options={modes} bind:value={mode} label="View" full /></div>
+			{#if mode !== 'theirs'}
+				<p class="tnum flex flex-wrap gap-x-3 text-sm text-muted">
+					<span><strong class="text-fg">{same}</strong> same</span>
+					<span><strong class="text-info">{different.length}</strong> different</span>
+					<span><strong class="text-fg">{pendingDiff}</strong> different &amp; pending</span>
+				</p>
+			{/if}
+		</div>
+	{/if}
+
+	{#if mode === 'theirs' || !canCompare}
+		<div class="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+			{#each categories as cat, i (cat.id)}
+				<CategoryCard {cat} index={i} pick={them[cat.id]} winner={winners[cat.id]} pickLabel={isMe ? 'Your pick' : `${name.split(' ')[0]}’s pick`} />
+			{/each}
+		</div>
+	{:else if !shown.length}
+		<EmptyState icon="check" title="Identical ballots">You and {name} made exactly the same picks.</EmptyState>
+	{:else}
+		<!-- Compare: Them vs You -->
+		<div class="hidden grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 px-5 pb-2 md:grid">
+			<span class="label-caps">Category</span>
+			<span class="label-caps truncate">{name}</span>
+			<span class="label-caps">You</span>
+		</div>
+		<ul class="space-y-2.5">
+			{#each shown as cat (cat.id)}
+				{@const w = winners[cat.id]}
+				{@const t = them[cat.id]}
+				{@const m = me[cat.id]}
+				{@const agree = t && t === m}
+				<li class="card p-4 md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4 md:px-5 {agree ? '' : 'border-l-4 border-l-info'}">
+					<div class="mb-2 flex items-center justify-between md:mb-0 md:block">
+						<p class="font-display text-[17px] font-semibold leading-tight">{cat.short}</p>
+						{#if w}
+							<p class="flex items-center gap-1 text-xs font-medium text-gold md:mt-1"><Icon name="trophy" size={13} /> {candidate(cat, w)?.text}</p>
+						{:else}
+							<p class="text-xs text-muted md:mt-1">Pending</p>
+						{/if}
+					</div>
+					{#if agree}
+						<p class="flex items-center gap-2 text-[15px] md:col-span-2">
+							<span class="text-xs font-semibold uppercase tracking-wider text-muted">Both</span>
+							<span class="font-semibold">{candidate(cat, t)?.text}</span>
+							{#if w}<Icon name={t === w ? 'check' : 'x'} size={16} stroke={2.75} class={t === w ? 'text-success' : 'text-danger'} />{/if}
+						</p>
+					{:else}
+						{#each [[name.split(' ')[0], t], ['You', m]] as [who, key], j}
+							<p class="flex items-center gap-2 py-0.5 text-[15px]">
+								<span class="w-14 shrink-0 truncate text-xs font-semibold uppercase tracking-wider text-muted md:hidden">{who}</span>
+								<span class="truncate {key ? 'font-semibold' : 'italic text-muted'} {j === 1 ? 'text-info' : ''}">{key ? candidate(cat, key)?.text : 'No pick'}</span>
+								{#if w && key}<Icon name={key === w ? 'check' : 'x'} size={16} stroke={2.75} class={key === w ? 'text-success' : 'text-danger'} />{/if}
+							</p>
+						{/each}
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 {/if}

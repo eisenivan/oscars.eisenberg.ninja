@@ -1,252 +1,286 @@
 <script>
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { user } from '$lib/services/auth';
-	import { db } from '$lib/services/auth';
-	import { keyFromName, isSelected } from '$lib/helpers';
-	import { YEAR } from '$lib/constants';
-	import Loader from '$lib/components/Loader.svelte';
-	import PageHeading from '$lib/components/PageHeading.svelte';
-	import { ref, get, set, onValue } from 'firebase/database';
+	import { onDestroy, tick } from 'svelte';
+	import { user } from '$lib/auth.js';
+	import { activeYear } from '$lib/data/year.js';
+	import { YEAR, settingsFor, categoriesFor, ballotFor, ballotsFor, saveVote } from '$lib/data/queries.js';
+	import { byCategory } from '$lib/domain/keys.js';
+	import { scoreVotes, buildLeaderboard } from '$lib/domain/scoring.js';
+	import { toast, haptic } from '$lib/stores/toast.js';
+	import CategoryCard from '$lib/components/ballot/CategoryCard.svelte';
+	import BallotSkeleton from '$lib/components/ballot/BallotSkeleton.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
-	let categories = [];
-	let ballot = [];
-	let locked = false;
-	let results = [];
-	let loading = true;
-	let hasBallot = false;
-	
-	// Year selection for past ballots
-	let availableYears = [];
-	let selectedYear = YEAR;
-	let showYearDropdown = false;
-	let dropdownElement = null;
-	let settingsUnsubscribe = null;
+	$: year = $activeYear;
+	$: settings = settingsFor(year);
+	$: cats = categoriesFor(year);
+	$: mine = ballotFor(year, $user.uid);
+	// Everyone's ballots are only readable once voting is locked.
+	$: everyone = $settings.locked ? ballotsFor(year) : null;
 
-	onMount(async () => {
-		if (!$user) {
-			await goto('/login');
+	$: categories = $cats.value;
+	$: editable = !$settings.locked && year === YEAR;
+	$: results = $settings.results;
+	$: winners = byCategory(results);
+
+	// Optimistic picks layered over the saved ballot.
+	let pending = {};
+	let saveState = {};
+	$: if (year) (pending = {}), (saveState = {});
+	$: saved = byCategory($mine.value?.votes);
+	$: picks = { ...saved, ...pending };
+	$: pickedCount = categories.filter((c) => picks[c.id]).length;
+	$: hasBallot = Object.keys(saved).length > 0;
+
+	$: showResults = $settings.locked && results.length > 0;
+	$: score = scoreVotes(Object.values(picks), results);
+	$: board = $everyone?.value ? buildLeaderboard($everyone.value, results) : [];
+	$: myRow = board.find((r) => r.uid === $user.uid);
+
+	$: loading = $settings.loading || $cats.loading || $mine.loading;
+
+	const timers = {};
+	async function pick({ detail: { cat, key } }) {
+		haptic();
+		const previous = picks[cat.id];
+		pending = { ...pending, [cat.id]: key };
+		saveState = { ...saveState, [cat.id]: 'saving' };
+		clearTimeout(timers[cat.id]);
+		autoAdvance(cat);
+		try {
+			await saveVote(year, $user, key);
+			saveState = { ...saveState, [cat.id]: 'saved' };
+			timers[cat.id] = setTimeout(() => {
+				const { [cat.id]: _, ...rest } = saveState;
+				saveState = rest;
+			}, 1800);
+			const { [cat.id]: __, ...restPending } = pending;
+			pending = restPending;
+		} catch (err) {
+			console.error(err);
+			const { [cat.id]: _, ...restPending } = pending;
+			pending = previous && previous !== saved[cat.id] ? { ...restPending, [cat.id]: previous } : restPending;
+			saveState = { ...saveState, [cat.id]: 'error' };
+			toast(`Couldn’t save your ${cat.short} pick`, {
+				tone: 'danger',
+				timeout: 8000,
+				action: { label: 'Retry', run: () => pick({ detail: { cat, key } }) }
+			});
+		}
+	}
+	onDestroy(() => Object.values(timers).forEach(clearTimeout));
+
+	// After a pick, glide to the next empty category if it's off-screen.
+	async function autoAdvance(cat) {
+		const i = categories.findIndex((c) => c.id === cat.id);
+		const next = [...categories.slice(i + 1), ...categories.slice(0, i)].find((c) => !picks[c.id]);
+		if (!next) {
+			if (pickedCount === categories.length)
+				toast('Ballot complete!', { tone: 'gold', detail: 'You can change picks until voting closes.' });
 			return;
 		}
-
-		// Load available years
-		try {
-			const settingsRef = ref(db, '/settings');
-			const settingsSnapshot = await get(settingsRef);
-			const settingsData = settingsSnapshot.val() || {};
-			availableYears = Object.keys(settingsData)
-				.map(year => parseInt(year))
-				.sort((a, b) => b - a);
-		} catch (error) {
-			console.error('Error loading years:', error);
+		await tick();
+		const el = document.getElementById(`cat-${next.id}`);
+		if (!el) return;
+		const rect = el.getBoundingClientRect();
+		if (rect.top > window.innerHeight * 0.75) {
+			setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
 		}
-
-		// Load the current year ballot
-		await loadBallot(selectedYear);
-
-		// Click outside handler for dropdown
-		const handleClickOutside = (event) => {
-			if (dropdownElement && !dropdownElement.contains(event.target)) {
-				showYearDropdown = false;
-			}
-		};
-		document.addEventListener('click', handleClickOutside);
-
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-			if (settingsUnsubscribe) {
-				settingsUnsubscribe();
-			}
-		};
-	});
-
-	async function loadBallot(year) {
-		loading = true;
-
-		// Unsubscribe from previous settings listener
-		if (settingsUnsubscribe) {
-			settingsUnsubscribe();
-		}
-
-		// Load categories
-		try {
-			const categoriesRef = ref(db, `/groups/${year}`);
-			const snapshot = await get(categoriesRef);
-			categories = snapshot.val() || [];
-		} catch (error) {
-			console.error('Error loading categories:', error);
-		}
-
-		// Listen to settings (locked status and results)
-		const settingsRef = ref(db, `/settings/${year}`);
-		settingsUnsubscribe = onValue(settingsRef, (snapshot) => {
-			const settings = snapshot.val();
-			if (settings) {
-				locked = settings.locked || false;
-				results = settings.results || [];
-			}
-		});
-
-		// Load user's ballot
-		try {
-			const ballotRef = ref(db, `/ballots/${year}/${$user.uid}/votes`);
-			const snapshot = await get(ballotRef);
-			if (snapshot.exists()) {
-				ballot = snapshot.val() || [];
-				hasBallot = ballot.length > 0;
-			} else {
-				ballot = [];
-				hasBallot = false;
-			}
-		} catch (error) {
-			console.error('Error loading ballot:', error);
-			hasBallot = false;
-		}
-
-		loading = false;
 	}
 
-	async function selectYear(year) {
-		selectedYear = year;
-		showYearDropdown = false;
-		await loadBallot(year);
+	function jumpTo(id) {
+		document.getElementById(`cat-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
-	const updateBallot = async (e) => {
-		const value = e.target.value;
-		const tempBallot = [...ballot];
-		const category = value.split('__')[0];
-		const index = tempBallot.findIndex((x) => x.indexOf(category) > -1);
-
-		if (index === -1) {
-			tempBallot.push(value);
-		} else {
-			tempBallot[index] = value;
-		}
-
-		try {
-			const ballotRef = ref(db, `ballots/${selectedYear}/${$user.uid}`);
-			await set(ballotRef, { displayName: $user.displayName, votes: tempBallot });
-			ballot = tempBallot;
-			hasBallot = ballot.length > 0;
-		} catch (error) {
-			console.error('Error updating ballot:', error);
-		}
-	};
-
-	let tempScore = 0;
-	$: if (ballot.length > 0 && results.length > 0) {
-		tempScore = 0;
-		results.forEach((winner) => {
-			if (ballot.indexOf(winner) > -1) {
-				tempScore += 1;
-			}
-		});
+	// Highlight the chip/sidebar entry for the category in view.
+	let activeId = null;
+	let rail;
+	function observe(node) {
+		const io = new IntersectionObserver(
+			(entries) => {
+				const top = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+				if (top) activeId = top.target.dataset.cat;
+			},
+			{ rootMargin: '-140px 0px -55% 0px' }
+		);
+		const scan = () => node.querySelectorAll('[data-cat]').forEach((el) => io.observe(el));
+		scan();
+		const mo = new MutationObserver(scan);
+		mo.observe(node, { childList: true, subtree: true });
+		return { destroy: () => (io.disconnect(), mo.disconnect()) };
 	}
+	$: if (rail && activeId) {
+		rail.querySelector(`[data-chip="${activeId}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+	}
+
+	$: statusOf = (c) =>
+		winners[c.id]
+			? picks[c.id] === winners[c.id]
+				? 'correct'
+				: picks[c.id]
+				? 'missed'
+				: 'none'
+			: picks[c.id]
+			? 'picked'
+			: 'empty';
+	const statusIcon = { correct: 'check', missed: 'x', picked: 'check', none: 'trophy' };
+	const statusColor = { correct: 'text-success', missed: 'text-danger', picked: 'text-gold', none: 'text-gold', empty: 'text-muted' };
+
+	$: pct = categories.length ? Math.round(((showResults ? results.length : pickedCount) / categories.length) * 100) : 0;
+	$: ringPct = results.length ? score / results.length : 0;
+	$: firstEmpty = categories.find((c) => !picks[c.id]);
 </script>
 
-<svelte:head>
-	<title>My Ballot</title>
-</svelte:head>
+<svelte:head><title>My Ballot · {year}</title></svelte:head>
+
+<header class="mb-5 flex flex-wrap items-end justify-between gap-3 sm:mb-6">
+	<div>
+		<p class="label-caps">{year} Academy Awards</p>
+		<h1 class="page-title mt-1">My Ballot</h1>
+	</div>
+	{#if !loading && !editable && !showResults}
+		<p class="flex items-center gap-1.5 text-sm text-muted">
+			<Icon name="lock" size={15} />
+			{year === YEAR ? 'Voting is closed' : 'Past ballot'}
+		</p>
+	{/if}
+</header>
 
 {#if loading}
-	<Loader />
+	<BallotSkeleton />
+{:else if !categories.length}
+	<EmptyState icon="calendar" title="Nominations aren’t in yet">
+		The {year} ballot will appear here once nominations are announced.
+	</EmptyState>
 {:else}
-	<div>
-		<PageHeading>
-			My Ballot
-			{#if hasBallot && locked && results.length > 0}
-				<span class="ml-2 text-sm">Score: {tempScore}/{results.length}</span>
-			{/if}
-			{#if !hasBallot}
-				<span class="ml-2 text-sm text-gray-600 dark:text-gray-300 italic">No ballot submitted</span>
-			{/if}
-		</PageHeading>
-
-		<!-- Year Selector Dropdown -->
-		{#if availableYears.length > 1}
-			<div class="max-w-xs mb-6 mt-6" bind:this={dropdownElement}>
-				<label for="year-select" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-					View Ballot:
-				</label>
-				<div class="relative">
-					<button
-						id="year-select"
-						on:click={() => showYearDropdown = !showYearDropdown}
-						class="w-full p-3 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded-lg text-left flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-					>
-						<span class="text-blue-700 dark:text-blue-400 font-medium">
-							{selectedYear} {selectedYear === YEAR ? '(Current)' : ''}
-						</span>
-						<span class="text-blue-500 dark:text-blue-400">▼</span>
-					</button>
-
-					{#if showYearDropdown}
-						<div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-							{#each availableYears as year (year)}
-								<button
-									on:click={() => selectYear(year)}
-									class="w-full p-3 text-left hover:bg-blue-50 dark:hover:bg-blue-900 focus:bg-blue-50 dark:focus:bg-blue-900 focus:outline-none border-b border-gray-100 dark:border-gray-700 last:border-b-0 {year === selectedYear ? 'bg-blue-100 dark:bg-blue-900 font-semibold' : ''}"
-								>
-									<span class="text-gray-900 dark:text-gray-100">{year}</span>
-									{#if year === YEAR}
-										<span class="text-xs text-blue-600 dark:text-blue-400 ml-2">(Current)</span>
-									{/if}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
+	<!-- Mobile/tablet: sticky progress + category chip rail -->
+	<div
+		class="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-4 mb-4 border-b border-line/70 bg-bg/90 px-4 pb-2 pt-2.5 backdrop-blur-md sm:-mx-6 sm:px-6 lg:hidden"
+	>
+		<div class="mb-2 flex items-center gap-3">
+			<div class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={pct} aria-valuemin="0" aria-valuemax="100" aria-label={showResults ? 'Categories announced' : 'Ballot progress'}>
+				<div class="h-full rounded-full bg-gold-fill transition-[width] duration-500" style="width:{pct}%" />
 			</div>
-		{/if}
-
-		<div
-			class="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 border-blue-700 border-8 rounded-sm border-opacity-10 card-polish p-4 bg-blue-100"
-		>
-			{#each categories as cat (cat.id)}
-				{@const winner = results.find((x) => x.indexOf(cat.id) > -1)}
-				{@const winningCandidate = cat.candidates && winner ? cat.candidates.find((c) => `${cat.id}__${keyFromName(c.text)}` === winner) : null}
-				{@const won = hasBallot && ballot.indexOf(winner) > -1}
-				{@const resultClass = hasBallot && locked && results.length > 0 && winner && won ? 'text-green-600' : hasBallot && locked && results.length > 0 && winner && !won ? 'text-red-600' : ''}
-				{@const resultSymbol = hasBallot && locked && results.length > 0 && winner && won ? '✓' : hasBallot && locked && results.length > 0 && winner && !won ? '✕' : ''}
-				<div class="mb-6">
-					<h2 class="text-md font-semibold mb-2 uppercase">
-						{cat.name}
-						<i class={resultClass}>{resultSymbol}</i>
-					</h2>
-					{#if !hasBallot && locked && results.length > 0 && winner && winningCandidate}
-						<div class="text-xs mt-1 text-blue-700 dark:text-blue-400">Winner: {winningCandidate.text}</div>
-					{/if}
-					{#each cat.candidates as candidate (candidate.text)}
-						{@const key = `${cat.id}__${keyFromName(candidate.text)}`}
-						{@const isWinner = results.indexOf(key) > -1}
-						<label
-							class={`border-solid block pl-2 ml-2 border-l border-indigo-200 ${
-								isWinner ? resultClass : ''
-							}`}
-							for={key}
-						>
-							<input
-								disabled={locked || selectedYear !== YEAR}
-								on:change={updateBallot}
-								checked={isSelected(ballot, key)}
-								class="mr-2"
-								type="radio"
-								name={cat.id}
-								value={key}
-								id={key}
-							/>
-							<span class="uppercase">{candidate.text}</span>
-							{#if locked && results.length > 0 && isWinner}
-								<span class="ml-2 inline-block px-2 py-0.5 text-xs rounded bg-blue-200 text-blue-900 dark:bg-blue-900 dark:text-blue-300">Winner</span>
-							{/if}
-							{#if candidate.subtext}
-								<span class="block ml-6 pb-2 font-light text-xs italic">{candidate.subtext}</span>
-							{/if}
-						</label>
-					{/each}
-				</div>
+			<span class="tnum text-xs font-semibold text-muted">
+				{#if showResults}<span class="text-fg">{score}</span>/{results.length} correct{:else}{pickedCount}/{categories.length}{/if}
+			</span>
+		</div>
+		<div bind:this={rail} class="scrollbar-none -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
+			{#each categories as c (c.id)}
+				{@const s = statusOf(c)}
+				<button
+					data-chip={c.id}
+					on:click={() => jumpTo(c.id)}
+					class="flex h-8 shrink-0 items-center gap-1 rounded-full border px-3 text-[13px] font-medium transition
+						{activeId === c.id ? 'border-gold-fill bg-gold-fill/15 text-fg' : 'border-line bg-surface text-muted'}"
+				>
+					{#if statusIcon[s]}<Icon name={statusIcon[s]} size={13} stroke={2.75} class={statusColor[s]} />{/if}
+					{c.short}
+				</button>
 			{/each}
 		</div>
 	</div>
+
+	<div class="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
+		<!-- Desktop sidebar -->
+		<aside class="hidden lg:block">
+			<div class="sticky top-24 space-y-4">
+				{#if showResults}
+					<div class="card p-4">
+						<div class="flex items-center gap-4">
+							<svg viewBox="0 0 36 36" class="h-16 w-16 -rotate-90" aria-hidden="true">
+								<circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(var(--surface-2))" stroke-width="4" />
+								<circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(var(--gold-fill))" stroke-width="4" stroke-linecap="round" stroke-dasharray="{ringPct * 97.4} 97.4" class="transition-all duration-700" />
+							</svg>
+							<div>
+								<p class="tnum font-display text-3xl font-semibold leading-none">{score}<span class="text-lg text-muted">/{results.length}</span></p>
+								<p class="mt-1 text-sm text-muted">correct so far</p>
+							</div>
+						</div>
+						{#if myRow}
+							<a href="/scoreboard/{year}" class="mt-3 flex items-center justify-between rounded-sm bg-surface-2 px-3 py-2 text-sm font-medium hover:bg-line/60">
+								<span>You’re <strong class="tnum text-gold">#{myRow.rank}</strong> of {board.length}</span>
+								<Icon name="chevron-right" size={16} class="text-muted" />
+							</a>
+						{/if}
+					</div>
+				{:else}
+					<div class="card p-4">
+						<p class="tnum font-display text-3xl font-semibold leading-none">{pickedCount}<span class="text-lg text-muted">/{categories.length}</span></p>
+						<p class="mt-1 text-sm text-muted">{editable ? 'categories picked' : 'picks made'}</p>
+						<div class="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+							<div class="h-full rounded-full bg-gold-fill transition-[width] duration-500" style="width:{pct}%" />
+						</div>
+					</div>
+				{/if}
+				<nav aria-label="Categories" class="max-h-[calc(100dvh-16rem)] overflow-y-auto pr-1">
+					<ul class="space-y-0.5">
+						{#each categories as c (c.id)}
+							{@const s = statusOf(c)}
+							<li>
+								<button
+									on:click={() => jumpTo(c.id)}
+									class="flex w-full items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-sm transition
+										{activeId === c.id ? 'bg-surface-2 font-semibold text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg'}"
+								>
+									<span class="grid w-4 place-items-center {statusColor[s]}">
+										{#if statusIcon[s]}<Icon name={statusIcon[s]} size={14} stroke={2.75} />{:else}<span class="h-1.5 w-1.5 rounded-full bg-line" />{/if}
+									</span>
+									<span class="truncate">{c.short}</span>
+								</button>
+							</li>
+						{/each}
+					</ul>
+				</nav>
+			</div>
+		</aside>
+
+		<div>
+			{#if showResults}
+				<!-- Mobile score summary -->
+				<div class="card mb-4 flex items-center gap-4 p-4 lg:hidden">
+					<svg viewBox="0 0 36 36" class="h-14 w-14 shrink-0 -rotate-90" aria-hidden="true">
+						<circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(var(--surface-2))" stroke-width="4" />
+						<circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(var(--gold-fill))" stroke-width="4" stroke-linecap="round" stroke-dasharray="{ringPct * 97.4} 97.4" />
+					</svg>
+					<div class="min-w-0 flex-1">
+						<p class="tnum font-display text-2xl font-semibold leading-none">{score}<span class="text-base text-muted"> / {results.length} correct</span></p>
+						{#if myRow}<p class="mt-1 text-sm text-muted">You’re <strong class="tnum text-gold">#{myRow.rank}</strong> of {board.length}</p>{/if}
+					</div>
+					<Button href="/scoreboard/{year}" variant="secondary" size="sm">Standings</Button>
+				</div>
+			{/if}
+
+			{#if !editable && !hasBallot}
+				<div class="card mb-4 flex items-center gap-3 p-4 text-sm text-muted">
+					<Icon name="info" size={18} /> You didn’t submit a ballot for {year}.{#if showResults} Winners are shown below.{/if}
+				</div>
+			{/if}
+
+			<div use:observe class="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+				{#each categories as cat, i (cat.id)}
+					<CategoryCard
+						{cat}
+						index={i}
+						pick={picks[cat.id]}
+						winner={$settings.locked ? winners[cat.id] : undefined}
+						{editable}
+						{hasBallot}
+						saveState={saveState[cat.id]}
+						on:pick={pick}
+					/>
+				{/each}
+			</div>
+		</div>
+	</div>
+
+	{#if editable && firstEmpty && pickedCount > 0}
+		<button
+			on:click={() => jumpTo(firstEmpty.id)}
+			class="fixed bottom-[calc(theme(spacing.tabbar)+env(safe-area-inset-bottom)+16px)] right-4 z-30 flex h-11 items-center gap-1.5 rounded-full bg-fg pl-3.5 pr-4 text-sm font-semibold text-bg shadow-lift lg:bottom-8 lg:right-8"
+		>
+			<Icon name="arrow-down" size={16} /> Next empty
+		</button>
+	{/if}
 {/if}

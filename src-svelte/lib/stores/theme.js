@@ -1,54 +1,42 @@
 import { writable } from 'svelte/store';
 
-function createThemeStore() {
-	// Check if we're in browser
-	const isBrowser = typeof window !== 'undefined';
-	
-	// Check localStorage first, then system preference
-	let initialDark = false;
-	if (isBrowser) {
-		const stored = localStorage.getItem('theme');
-		if (stored) {
-			initialDark = stored === 'dark';
-		} else {
-			// Check system preference
-			initialDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		}
+/** 'system' | 'light' | 'dark'. app.html applies the initial class pre-paint. */
+const KEY = 'theme';
+const browser = typeof window !== 'undefined';
+
+function read() {
+	try {
+		return (browser && localStorage.getItem(KEY)) || 'system';
+	} catch {
+		return 'system';
 	}
-
-	const { subscribe, set } = writable(initialDark);
-
-	// Apply initial theme
-	function applyTheme(isDark) {
-		if (isBrowser) {
-			localStorage.setItem('theme', isDark ? 'dark' : 'light');
-			const html = document.documentElement;
-			if (isDark) {
-				html.classList.add('dark');
-			} else {
-				html.classList.remove('dark');
-			}
-		}
-	}
-
-	// Apply initial theme
-	applyTheme(initialDark);
-
-	return {
-		subscribe,
-		toggle: () => {
-			let newValue;
-			subscribe((current) => {
-				newValue = !current;
-			})();
-			applyTheme(newValue);
-			set(newValue);
-		},
-		setDark: (isDark) => {
-			applyTheme(isDark);
-			set(isDark);
-		}
-	};
 }
 
-export const theme = createThemeStore();
+const media = browser ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+function apply(mode) {
+	if (!browser) return;
+	const dark = mode === 'dark' || (mode === 'system' && media.matches);
+	document.documentElement.classList.toggle('dark', dark);
+	document
+		.querySelectorAll('meta[name="theme-color"]')
+		.forEach((m) => m.setAttribute('content', dark ? '#0E0D0B' : '#FAF7F0'));
+	isDark.set(dark);
+}
+
+export const isDark = writable(false);
+export const themeMode = writable(read());
+
+if (browser) {
+	themeMode.subscribe((mode) => {
+		try {
+			localStorage.setItem(KEY, mode);
+		} catch {}
+		apply(mode);
+	});
+	media.addEventListener('change', () => {
+		let mode;
+		themeMode.subscribe((m) => (mode = m))();
+		if (mode === 'system') apply(mode);
+	});
+}
