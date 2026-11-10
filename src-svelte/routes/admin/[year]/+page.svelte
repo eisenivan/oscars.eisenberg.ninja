@@ -74,6 +74,7 @@
 
 <div class="mx-auto max-w-3xl">
 	<header class="mb-6">
+		<a href="/admin" class="mb-2 inline-flex items-center gap-0.5 text-sm font-medium text-muted hover:text-fg"><Icon name="chevron-left" size={16} /> Seasons</a>
 		<p class="label-caps">Admin · {year}</p>
 		<h1 class="page-title mt-1">Results entry</h1>
 	</header>

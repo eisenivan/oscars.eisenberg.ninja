@@ -1,3 +1,42 @@
+# oscars.eisenberg.ninja
+
+Oscar-prediction ballots and leaderboards. SvelteKit (static) + Firebase Auth and Realtime Database.
+Roadmap: [PLAN.md](PLAN.md).
+
+```bash
+npm run dev            # local dev; add ?demo=open|live|final for fixture data
+npm test               # unit tests
+npm run deploy:rules   # deploy database.rules.json
+npm run backup         # download the whole database to backups/
+```
+
+## Adding a new season
+
+Admin → Account sheet → **Seasons** (`/admin`). Download the template
+([static/templates/season-template.json](static/templates/season-template.json)), fill in the nominees, then paste
+or load it. The newest season becomes the current year for everyone with no deploy. The file format is in
+[PLAN.md § A](PLAN.md#a-add-a-season-from-the-admin-panel-).
+
+## Backups and restore
+
+`npm run backup` writes `backups/eisenberg-oscars-<timestamp>.json`, using your `firebase login`. If it fails with
+an auth error, run `firebase login --reauth`. Backups contain user data and are git-ignored.
+
+Restore **overwrites** data. Take a fresh backup first.
+
+```bash
+# whole database
+firebase database:set / backups/<file>.json --project eisenberg-oscars
+
+# a single path, e.g. one year's ballots
+jq '.ballots["2026"]' backups/<file>.json > /tmp/ballots-2026.json
+firebase database:set /ballots/2026 /tmp/ballots-2026.json --project eisenberg-oscars
+```
+
+---
+
+_Legacy notes from the original Create React App project:_
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

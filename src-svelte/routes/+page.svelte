@@ -2,7 +2,7 @@
 	import { onDestroy, tick } from 'svelte';
 	import { user } from '$lib/auth.js';
 	import { activeYear } from '$lib/data/year.js';
-	import { YEAR, settingsFor, categoriesFor, ballotFor, ballotsFor, saveVote } from '$lib/data/queries.js';
+	import { currentYear, settingsFor, categoriesFor, ballotFor, ballotsFor, saveVote } from '$lib/data/queries.js';
 	import { byCategory } from '$lib/domain/keys.js';
 	import { scoreVotes, buildLeaderboard } from '$lib/domain/scoring.js';
 	import { toast, haptic } from '$lib/stores/toast.js';
@@ -20,7 +20,7 @@
 	$: everyone = $settings.locked ? ballotsFor(year) : null;
 
 	$: categories = $cats.value;
-	$: editable = !$settings.locked && year === YEAR;
+	$: editable = !$settings.locked && year === $currentYear;
 	$: results = $settings.results;
 	$: winners = byCategory(results);
 
@@ -142,7 +142,7 @@
 	{#if !loading && !editable && !showResults}
 		<p class="flex items-center gap-1.5 text-sm text-muted">
 			<Icon name="lock" size={15} />
-			{year === YEAR ? 'Voting is closed' : 'Past ballot'}
+			{year === $currentYear ? 'Voting is closed' : 'Past ballot'}
 		</p>
 	{/if}
 </header>

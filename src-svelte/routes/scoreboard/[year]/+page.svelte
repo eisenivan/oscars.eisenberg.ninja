@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { onDestroy } from 'svelte';
 	import { user } from '$lib/auth.js';
-	import { settingsFor, categoriesFor, ballotsFor, ballotFor, YEAR } from '$lib/data/queries.js';
+	import { settingsFor, categoriesFor, ballotsFor, ballotFor, currentYear } from '$lib/data/queries.js';
 	import { buildLeaderboard, resultsFeed } from '$lib/domain/scoring.js';
 	import { categoryOf } from '$lib/domain/keys.js';
 	import { toast } from '$lib/stores/toast.js';
@@ -140,7 +140,7 @@
 					<div class="h-full rounded-full bg-gold-fill" style="width:{total ? (myPicks / total) * 100 : 0}%" />
 				</div>
 				<p class="mt-3 text-sm text-muted">Rankings appear once voting closes and the first envelope is opened.</p>
-				{#if year === YEAR}
+				{#if year === $currentYear}
 					<Button href="/" full class="mt-5">{myPicks < total ? 'Finish my ballot' : 'Review my ballot'}</Button>
 				{/if}
 			</div>

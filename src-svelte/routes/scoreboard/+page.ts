@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import { YEAR } from '$lib/data/queries.js';
+import { loadCurrentYear } from '$lib/data/queries.js';
 
-export function load() {
-	throw redirect(307, `/scoreboard/${YEAR}`);
+export async function load() {
+	throw redirect(307, `/scoreboard/${await loadCurrentYear()}`);
 }

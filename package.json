@@ -9,7 +9,8 @@
     "test": "vitest",
     "lint": "eslint .",
     "format": "prettier --plugin-search-dir . --write .",
-    "deploy:rules": "firebase deploy --only database"
+    "deploy:rules": "firebase deploy --only database",
+    "backup": "node scripts/backup.js"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^2.0.0",

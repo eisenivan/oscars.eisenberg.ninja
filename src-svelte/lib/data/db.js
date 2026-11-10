@@ -1,5 +1,5 @@
 import { readable, get as getStore } from 'svelte/store';
-import { ref, onValue, get, set } from 'firebase/database';
+import { ref, onValue, get, set, update } from 'firebase/database';
 import { db } from '$lib/firebase.js';
 import { DEMO } from './demo-flag.js';
 
@@ -91,6 +91,17 @@ export async function write(path, value) {
 		return demoWrite(await demo(), path, value);
 	}
 	return set(ref(db, norm(path)), value);
+}
+
+/** Atomic multi-path write: { 'a/b': value, 'c/d': value }. */
+export async function writeMany(updates) {
+	if (import.meta.env.DEV && DEMO) {
+		await new Promise((r) => setTimeout(r, 350));
+		const tree = await demo();
+		for (const [path, value] of Object.entries(updates)) demoWrite(tree, path, value);
+		return;
+	}
+	return update(ref(db), updates);
 }
 
 /** Wait for a live store's first value. */

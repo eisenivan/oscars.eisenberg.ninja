@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { user } from '$lib/auth.js';
 	import { activeYear } from '$lib/data/year.js';
+	import { currentYear } from '$lib/data/queries.js';
 	import { themeMode, isDark } from '$lib/stores/theme.js';
 	import Icon from '../ui/Icon.svelte';
 	import Avatar from '../ui/Avatar.svelte';
@@ -11,7 +12,7 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	$: items = navItems($activeYear);
+	$: items = navItems($activeYear, $currentYear);
 	$: path = $page.url.pathname;
 
 	function toggleTheme() {

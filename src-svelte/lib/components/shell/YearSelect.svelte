@@ -1,17 +1,16 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { years } from '$lib/data/queries.js';
+	import { years, currentYear } from '$lib/data/queries.js';
 	import { activeYear, hrefForYear } from '$lib/data/year.js';
-	import { YEAR } from '$lib/data/queries.js';
 	import Icon from '../ui/Icon.svelte';
 
-	$: options = $years.length ? $years : [YEAR];
+	$: options = $years.length ? $years : [$currentYear];
 	// Only meaningful on year-scoped pages.
-	$: scoped = $page.url.pathname === '/' || /^\/(scoreboard|admin)/.test($page.url.pathname);
+	$: scoped = $page.url.pathname === '/' || /^\/(scoreboard|admin\/)/.test($page.url.pathname);
 
 	function change(e) {
-		goto(hrefForYear($page.url.pathname, Number(e.currentTarget.value)));
+		goto(hrefForYear($page.url.pathname, Number(e.currentTarget.value), $currentYear));
 	}
 </script>
 

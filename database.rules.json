@@ -1,75 +1,12 @@
 {
   "rules": {
     "ballots": {
-      "2021": {
+      "$year": {
+        ".read": "auth.uid !== null && root.child('settings/' + $year + '/locked').val() === true",
         "$uid": {
-          ".write": "root.child('settings/2021/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2021/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2021/locked').val() === true"
-      },
-      "2022": {
-        "$uid": {
-          ".write": "root.child('settings/2022/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2022/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2022/locked').val() === true"
-      },
-      "2023": {
-        "$uid": {
-          ".write": "root.child('settings/2023/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2023/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2023/locked').val() === true"
-      },
-      "2024": {
-        "$uid": {
-          ".write": "root.child('settings/2024/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2024/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2024/locked').val() === true"
-      },
-      "2025": {
-        "$uid": {
-          ".write": "root.child('settings/2025/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2025/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2025/locked').val() === true"
-      },
-      "2026": {
-        "$uid": {
-          ".write": "root.child('settings/2026/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null"
-        },
-        ".read": "auth.uid !== null"
-      },
-      "2027": {
-        "$uid": {
-          ".write": "root.child('settings/2027/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2027/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2027/locked').val() === true"
-      },
-      "2028": {
-        "$uid": {
-          ".write": "root.child('settings/2028/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2028/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2028/locked').val() === true"
-      },
-      "2029": {
-        "$uid": {
-          ".write": "root.child('settings/2029/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2029/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2029/locked').val() === true"
-      },
-      "2030": {
-        "$uid": {
-          ".write": "root.child('settings/2030/locked').val() === false && $uid === auth.uid",
-          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/2030/locked').val() === true)"
-        },
-        ".read": "auth.uid !== null && root.child('settings/2030/locked').val() === true"
+          ".read": "auth.uid !== null && ($uid === auth.uid || root.child('settings/' + $year + '/locked').val() === true)",
+          ".write": "$uid === auth.uid && root.child('settings/' + $year + '/locked').val() === false"
+        }
       }
     },
     "scores": {
@@ -79,49 +16,17 @@
       }
     },
     "settings": {
+      ".read": true,
       ".write": "root.child('admins').child(auth.uid).exists() === true",
-      ".read": true
+      "$year": {
+        ".validate": "$year.matches(/^[0-9]{4}$/)"
+      }
     },
     "groups": {
-      "2021": {
-        ".read": true,
-        ".write": false
-      },
-      "2022": {
-        ".read": true,
-        ".write": false
-      },
-      "2023": {
-        ".read": true,
-        ".write": false
-      },
-      "2024": {
-        ".read": true,
-        ".write": false
-      },
-      "2025": {
-        ".read": true,
-        ".write": false
-      },
-      "2026": {
-        ".read": true,
-        ".write": false
-      },
-      "2027": {
-        ".read": true,
-        ".write": false
-      },
-      "2028": {
-        ".read": true,
-        ".write": false
-      },
-      "2029": {
-        ".read": true,
-        ".write": false
-      },
-      "2030": {
-        ".read": true,
-        ".write": false
+      ".read": true,
+      "$year": {
+        ".write": "root.child('admins').child(auth.uid).exists() === true",
+        ".validate": "$year.matches(/^[0-9]{4}$/) && (newData.hasChildren() || !newData.exists())"
       }
     },
     "admins": {

@@ -1,13 +1,14 @@
 <script>
 	import { page } from '$app/stores';
 	import { activeYear } from '$lib/data/year.js';
+	import { currentYear } from '$lib/data/queries.js';
 	import Icon from '../ui/Icon.svelte';
 	import { navItems } from './nav.js';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
 	export let moreOpen = false;
-	$: items = navItems($activeYear);
+	$: items = navItems($activeYear, $currentYear);
 	$: path = $page.url.pathname;
 	$: moreActive = moreOpen || /^\/(profile|about|admin)/.test(path);
 </script>

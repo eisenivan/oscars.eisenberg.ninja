@@ -1,0 +1,660 @@
+{
+  "_readme": [
+    "Season file for oscars.eisenberg.ninja. Admin > Seasons > Add a season, then paste this file or load it.",
+    "year: the ceremony year (the 2027 ceremony honors 2026 films).",
+    "categories: shown on the ballot in this order.",
+    "  id: lowercase letters, numbers and dashes. Keep ids the same every year. If you leave it out, it is generated from name.",
+    "  name: shown on the ballot, e.g. 'Best Picture'.",
+    "  candidates: at least 2. text is the main line (person or film). subtext is optional (film, song credits, producers). Delete subtext if there isn't one.",
+    "Each pick is saved as '<id>__<text lowercased, spaces removed>'. If you change a nominee's text after people vote, their pick for it stops counting.",
+    "Replace every TODO. The importer won't accept a file with placeholders.",
+    "Fields starting with '_' are ignored."
+  ],
+  "year": 2027,
+  "categories": [
+    {
+      "id": "best-picture",
+      "name": "Best Picture",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 6",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 7",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 8",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 9",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 10",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-director",
+      "name": "Best Director",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-actress",
+      "name": "Best Actress",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-actor",
+      "name": "Best Actor",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-supporting-actress",
+      "name": "Best Supporting Actress",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-supporting-actor",
+      "name": "Best Supporting Actor",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-original-screenplay",
+      "name": "Best Original Screenplay",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-adapted-screenplay",
+      "name": "Best Adapted Screenplay",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-international-feature",
+      "name": "Best International Feature",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-documentary-feature",
+      "name": "Best Documentary Feature",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-animated-feature",
+      "name": "Best Animated Feature",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-cinematography",
+      "name": "Best Cinematography",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-costume-design",
+      "name": "Best Costume Design",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-film-editing",
+      "name": "Best Film Editing",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-production-design",
+      "name": "Best Production Design",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-original-score",
+      "name": "Best Original Score",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-original-song",
+      "name": "Best Original Song",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-sound",
+      "name": "Best Sound",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-visual-effects",
+      "name": "Best Visual Effects",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-makeup-and-hairstyling",
+      "name": "Best Makeup and Hairstyling",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-documentary-short",
+      "name": "Best Documentary Short",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-animated-short",
+      "name": "Best Animated Short",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-live-action-short",
+      "name": "Best Live Action Short",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    },
+    {
+      "id": "best-casting",
+      "name": "Best Casting",
+      "candidates": [
+        {
+          "text": "TODO nominee 1",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 2",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 3",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 4",
+          "subtext": "TODO film or credits"
+        },
+        {
+          "text": "TODO nominee 5",
+          "subtext": "TODO film or credits"
+        }
+      ]
+    }
+  ]
+}

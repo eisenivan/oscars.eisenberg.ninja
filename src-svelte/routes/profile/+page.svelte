@@ -1,6 +1,6 @@
 <script>
 	import { user, updateDisplayName, changeEmail, resetPassword, signOut, authMessage } from '$lib/auth.js';
-	import { syncBallotName, YEAR } from '$lib/data/queries.js';
+	import { syncBallotName, currentYear } from '$lib/data/queries.js';
 	import { themeMode } from '$lib/stores/theme.js';
 	import { toast } from '$lib/stores/toast.js';
 	import { goto } from '$app/navigation';
@@ -25,7 +25,7 @@
 		savingName = true;
 		try {
 			await updateDisplayName(n);
-			await syncBallotName(YEAR, $user, n);
+			await syncBallotName($currentYear, $user, n);
 			toast('Name updated', { tone: 'success' });
 		} catch (err) {
 			nameError = authMessage(err);

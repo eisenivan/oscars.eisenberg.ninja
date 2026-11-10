@@ -1,8 +1,15 @@
-import { derived } from 'svelte/store';
-import { live, write, read } from './db.js';
+import { derived, get as getStore } from 'svelte/store';
+import { live, write, writeMany, read, ready } from './db.js';
 import { withKeys, upsertKey } from '$lib/domain/keys.js';
 
-export const YEAR = 2026;
+/** Used only until settings load. The real current year comes from the data. */
+const FALLBACK_YEAR = 2026;
+let remembered = FALLBACK_YEAR;
+try {
+	remembered = Number(localStorage.getItem('currentYear')) || FALLBACK_YEAR;
+} catch {
+	/* storage unavailable */
+}
 
 /** All year settings (publicly readable, small). One shared listener. */
 export const allSettings = live('settings');
@@ -13,6 +20,26 @@ export const years = derived(allSettings, ($s) =>
 		.filter(Boolean)
 		.sort((a, b) => b - a)
 );
+
+/**
+ * The season people vote in: the newest year that has settings. Creating
+ * a season from /admin makes it current, with no deploy needed.
+ */
+export const currentYear = derived(years, ($years) => {
+	const y = $years[0] || remembered;
+	try {
+		localStorage.setItem('currentYear', String(y));
+	} catch {
+		/* storage unavailable */
+	}
+	return y;
+});
+
+/** Current year once settings have loaded (for load functions). */
+export async function loadCurrentYear() {
+	await ready(allSettings);
+	return getStore(currentYear);
+}
 
 export function settingsFor(year) {
 	return derived(allSettings, ($s) => {
@@ -63,6 +90,21 @@ export async function saveResults(year, results) {
 export async function saveLocked(year, locked) {
 	await write(`settings/${year}/locked`, !!locked);
 }
+
+/**
+ * Create a season, or replace an existing season's nominees. A new season
+ * starts with voting open. Replacing keeps its locked state and results.
+ */
+export async function saveSeason(year, categories) {
+	const exists = (await read(`settings/${year}`)) != null;
+	const updates = { [`groups/${year}`]: categories };
+	if (!exists) updates[`settings/${year}/locked`] = false;
+	await writeMany(updates);
+	return { created: !exists };
+}
+
+/** Raw categories as stored (no derived keys), for exporting or editing. */
+export const rawCategories = (year) => read(`groups/${year}`);
 
 export async function isAdmin(uid) {
 	try {

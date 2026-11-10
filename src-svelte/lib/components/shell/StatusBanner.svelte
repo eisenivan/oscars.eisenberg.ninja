@@ -1,7 +1,7 @@
 <script>
 	import { user } from '$lib/auth.js';
 	import { activeYear } from '$lib/data/year.js';
-	import { settingsFor, categoriesFor, ballotFor, YEAR } from '$lib/data/queries.js';
+	import { settingsFor, categoriesFor, ballotFor, currentYear } from '$lib/data/queries.js';
 	import { connected } from '$lib/data/db.js';
 	import { categoryOf } from '$lib/domain/keys.js';
 	import Icon from '../ui/Icon.svelte';
@@ -56,7 +56,7 @@
 				<span class="h-2 w-2 shrink-0 rounded-full bg-gold-fill" />
 				<span class="font-semibold">Voting open</span>
 				<span class="text-muted">· {picked} of {total} picked</span>
-				{#if firstEmpty && year === YEAR}
+				{#if firstEmpty && year === $currentYear}
 					<a href="/#cat-{firstEmpty.id}" class="ml-auto flex items-center gap-0.5 font-semibold text-gold hover:underline">
 						Next pick <Icon name="chevron-right" size={16} />
 					</a>

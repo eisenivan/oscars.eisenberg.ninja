@@ -57,6 +57,11 @@
 					<Icon name="shield" class="text-muted" /> Enter results <Icon name="chevron-right" size={18} class="ml-auto text-muted" />
 				</button>
 			</li>
+			<li>
+				<button class="flex h-12 w-full items-center gap-3 rounded-sm px-2 text-left hover:bg-surface-2" on:click={() => go('/admin')}>
+					<Icon name="calendar" class="text-muted" /> Seasons <Icon name="chevron-right" size={18} class="ml-auto text-muted" />
+				</button>
+			</li>
 		{/if}
 	</ul>
 	<p class="label-caps mb-2">Theme</p>
