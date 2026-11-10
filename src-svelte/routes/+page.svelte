@@ -3,8 +3,8 @@
 	import { user } from '$lib/auth.js';
 	import { activeYear } from '$lib/data/year.js';
 	import { currentYear, settingsFor, categoriesFor, ballotFor, ballotsFor, saveVote } from '$lib/data/queries.js';
-	import { byCategory } from '$lib/domain/keys.js';
-	import { scoreVotes, buildLeaderboard } from '$lib/domain/scoring.js';
+	import { byCategory, winnersOf } from '$lib/domain/keys.js';
+	import { scoreVotes, buildLeaderboard, announcedCount } from '$lib/domain/scoring.js';
 	import { toast, haptic } from '$lib/stores/toast.js';
 	import CategoryCard from '$lib/components/ballot/CategoryCard.svelte';
 	import BallotSkeleton from '$lib/components/ballot/BallotSkeleton.svelte';
@@ -22,7 +22,8 @@
 	$: categories = $cats.value;
 	$: editable = !$settings.locked && year === $currentYear;
 	$: results = $settings.results;
-	$: winners = byCategory(results);
+	$: winners = winnersOf(results);
+	$: announced = announcedCount(results);
 
 	// Optimistic picks layered over the saved ballot.
 	let pending = {};
@@ -116,7 +117,7 @@
 
 	$: statusOf = (c) =>
 		winners[c.id]
-			? picks[c.id] === winners[c.id]
+			? winners[c.id].includes(picks[c.id])
 				? 'correct'
 				: picks[c.id]
 				? 'missed'
@@ -127,8 +128,8 @@
 	const statusIcon = { correct: 'check', missed: 'x', picked: 'check', none: 'trophy' };
 	const statusColor = { correct: 'text-success', missed: 'text-danger', picked: 'text-gold', none: 'text-gold', empty: 'text-muted' };
 
-	$: pct = categories.length ? Math.round(((showResults ? results.length : pickedCount) / categories.length) * 100) : 0;
-	$: ringPct = results.length ? score / results.length : 0;
+	$: pct = categories.length ? Math.round(((showResults ? announced : pickedCount) / categories.length) * 100) : 0;
+	$: ringPct = announced ? score / announced : 0;
 	$: firstEmpty = categories.find((c) => !picks[c.id]);
 </script>
 
@@ -163,7 +164,7 @@
 				<div class="h-full rounded-full bg-gold-fill transition-[width] duration-500" style="width:{pct}%" />
 			</div>
 			<span class="tnum text-xs font-semibold text-muted">
-				{#if showResults}<span class="text-fg">{score}</span>/{results.length} correct{:else}{pickedCount}/{categories.length}{/if}
+				{#if showResults}<span class="text-fg">{score}</span>/{announced} correct{:else}{pickedCount}/{categories.length}{/if}
 			</span>
 		</div>
 		<div bind:this={rail} class="scrollbar-none -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
@@ -194,7 +195,7 @@
 								<circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(var(--gold-fill))" stroke-width="4" stroke-linecap="round" stroke-dasharray="{ringPct * 97.4} 97.4" class="transition-all duration-700" />
 							</svg>
 							<div>
-								<p class="tnum font-display text-3xl font-semibold leading-none">{score}<span class="text-lg text-muted">/{results.length}</span></p>
+								<p class="tnum font-display text-3xl font-semibold leading-none">{score}<span class="text-lg text-muted">/{announced}</span></p>
 								<p class="mt-1 text-sm text-muted">correct so far</p>
 							</div>
 						</div>
@@ -245,7 +246,7 @@
 						<circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(var(--gold-fill))" stroke-width="4" stroke-linecap="round" stroke-dasharray="{ringPct * 97.4} 97.4" />
 					</svg>
 					<div class="min-w-0 flex-1">
-						<p class="tnum font-display text-2xl font-semibold leading-none">{score}<span class="text-base text-muted"> / {results.length} correct</span></p>
+						<p class="tnum font-display text-2xl font-semibold leading-none">{score}<span class="text-base text-muted"> / {announced} correct</span></p>
 						{#if myRow}<p class="mt-1 text-sm text-muted">You’re <strong class="tnum text-gold">#{myRow.rank}</strong> of {board.length}</p>{/if}
 					</div>
 					<Button href="/scoreboard/{year}" variant="secondary" size="sm">Standings</Button>
@@ -264,7 +265,7 @@
 						{cat}
 						index={i}
 						pick={picks[cat.id]}
-						winner={$settings.locked ? winners[cat.id] : undefined}
+						winners={$settings.locked ? winners[cat.id] : undefined}
 						{editable}
 						{hasBallot}
 						saveState={saveState[cat.id]}

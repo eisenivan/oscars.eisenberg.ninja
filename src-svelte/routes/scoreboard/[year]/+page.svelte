@@ -4,7 +4,7 @@
 	import { onDestroy } from 'svelte';
 	import { user } from '$lib/auth.js';
 	import { settingsFor, categoriesFor, ballotsFor, ballotFor, currentYear } from '$lib/data/queries.js';
-	import { buildLeaderboard, resultsFeed } from '$lib/domain/scoring.js';
+	import { buildLeaderboard, resultsFeed, announcedCount } from '$lib/domain/scoring.js';
 	import { categoryOf } from '$lib/domain/keys.js';
 	import { toast } from '$lib/stores/toast.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -24,8 +24,9 @@
 	$: results = $settings.results;
 	$: total = $cats.value.length;
 	$: board = buildLeaderboard($ballots.value || {}, results);
-	$: live = locked && results.length > 0;
-	$: final = live && total && results.length >= total;
+	$: announced = announcedCount(results);
+	$: live = locked && announced > 0;
+	$: final = live && total && announced >= total;
 	$: feed = live ? resultsFeed($cats.value, $ballots.value || {}, results) : [];
 	$: names = [...board].sort((a, b) => a.displayName.localeCompare(b.displayName));
 	$: myPicks = ($mine.value?.votes || []).filter(Boolean).length;
@@ -33,7 +34,7 @@
 	$: podium = live ? board.filter((r) => r.rank <= 3).slice(0, 3) : [];
 	$: rest = live ? board.slice(podium.length) : [];
 	$: me = board.find((r) => r.uid === $user.uid);
-	$: maxScore = Math.max(1, results.length);
+	$: maxScore = Math.max(1, announced);
 	$: tied = board.reduce((m, r) => ((m[r.rank] = (m[r.rank] || 0) + 1), m), {});
 	const rankLabel = (rank, t) => (t[rank] > 1 ? `T${rank}` : `${rank}`);
 
@@ -51,8 +52,8 @@
 			deltaTimer = setTimeout(() => (deltas = {}), 6000);
 			const f = feed[0];
 			if (f) {
-				const gotIt = ($mine.value?.votes || []).includes(f.key);
-				toast(`${f.category}: ${f.winner}`, {
+				const gotIt = f.keys.some((k) => ($mine.value?.votes || []).includes(k));
+				toast(`${f.category}: ${f.winner}${f.tie ? ' (tie)' : ''}`, {
 					tone: 'gold',
 					timeout: 7000,
 					detail: `${f.correct} of ${f.total} got it${gotIt ? ' — <strong>including you!</strong>' : ''}`
@@ -74,8 +75,8 @@
 	}
 
 	let openFeed = null;
-	$: whoGotIt = (key) =>
-		board.filter((r) => r.votes.includes(key)).map((r) => r.displayName);
+	$: whoGotIt = (keys) =>
+		board.filter((r) => keys.some((k) => r.votes.includes(k))).map((r) => r.displayName);
 
 	const podiumOrder = (p) => (p.length === 3 ? [p[1], p[0], p[2]] : p);
 	const medal = (rank) => (rank <= 3 ? rank : null);
@@ -100,7 +101,7 @@
 	</div>
 	{#if !loading}
 		<p class="tnum text-sm text-muted">
-			{#if live}{results.length} of {total} announced{:else if locked}Voting closed · {board.length} ballots{:else}{board.length} ballots in{/if}
+			{#if live}{announced} of {total} announced{:else if locked}Voting closed · {board.length} ballots{:else}{board.length} ballots in{/if}
 		</p>
 	{/if}
 </header>
@@ -241,7 +242,7 @@
 								</button>
 								{#if openFeed === f.key}
 									<p class="px-4 pb-3 pl-[60px] text-sm text-muted">
-										{whoGotIt(f.key).join(', ') || 'Nobody picked it.'}
+										{whoGotIt(f.keys).join(', ') || 'Nobody picked it.'}
 									</p>
 								{/if}
 							</li>

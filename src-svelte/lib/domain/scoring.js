@@ -1,10 +1,16 @@
-import { byCategory, categoryOf } from './keys.js';
+import { byCategory, categoryOf, winnersOf } from './keys.js';
 
+/** One point per category whose pick is a winner (any of them, for a tie). */
 export function scoreVotes(votes = [], results = []) {
-	const picked = new Set(votes || []);
+	const winners = winnersOf(results);
 	let score = 0;
-	for (const winner of results || []) if (winner && picked.has(winner)) score += 1;
+	for (const [cat, pick] of Object.entries(byCategory(votes))) if (winners[cat]?.includes(pick)) score += 1;
 	return score;
+}
+
+/** Number of categories with at least one winner (ties count once). */
+export function announcedCount(results = []) {
+	return Object.keys(winnersOf(results)).length;
 }
 
 /**
@@ -34,21 +40,25 @@ export function buildLeaderboard(ballots = {}, results = []) {
 	return rankEntries(rows);
 }
 
-/** How many ballots picked each announced winner. Newest result first. */
+/**
+ * One entry per announced category, newest first, with how many ballots
+ * got it. A tie is one entry with several `keys` and winners joined by "&".
+ */
 export function resultsFeed(categories = [], ballots = {}, results = []) {
 	const catById = Object.fromEntries((categories || []).map((c) => [c.id, c]));
 	const all = Object.values(ballots || {});
-	return (results || [])
-		.filter(Boolean)
-		.map((winnerKey) => {
-			const cat = catById[categoryOf(winnerKey)];
-			const winner = cat?.candidates?.find((c) => c.key === winnerKey);
-			const correct = all.filter((b) => (b?.votes || []).includes(winnerKey)).length;
+	return Object.entries(winnersOf(results))
+		.map(([catId, keys]) => {
+			const cat = catById[catId];
+			const names = keys.map((k) => cat?.candidates?.find((c) => c.key === k)?.text || k.split('__')[1]);
+			const correct = all.filter((b) => keys.some((k) => (b?.votes || []).includes(k))).length;
 			return {
-				key: winnerKey,
-				categoryId: cat?.id,
-				category: cat?.name || categoryOf(winnerKey),
-				winner: winner?.text || winnerKey.split('__')[1],
+				key: catId,
+				keys,
+				tie: keys.length > 1,
+				categoryId: catId,
+				category: cat?.name || catId,
+				winner: names.join(' & '),
 				correct,
 				total: all.length
 			};
@@ -56,13 +66,13 @@ export function resultsFeed(categories = [], ballots = {}, results = []) {
 		.reverse();
 }
 
-/** Per-category outcome for a ballot. */
-export function outcome(votesMap, resultsMap, categoryId) {
-	const winner = resultsMap[categoryId];
+/** Per-category outcome for a ballot. winnersMap comes from winnersOf(). */
+export function outcome(votesMap, winnersMap, categoryId) {
+	const winners = winnersMap[categoryId] || [];
 	const pick = votesMap[categoryId];
-	if (!winner) return pick ? 'pending' : 'empty';
+	if (!winners.length) return pick ? 'pending' : 'empty';
 	if (!pick) return 'none';
-	return pick === winner ? 'correct' : 'missed';
+	return winners.includes(pick) ? 'correct' : 'missed';
 }
 
 /**
@@ -113,4 +123,4 @@ export function champions(yearsData = []) {
 		.sort((a, b) => b.year - a.year);
 }
 
-export { byCategory };
+export { byCategory, winnersOf };

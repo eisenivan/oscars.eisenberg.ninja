@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { keyFromName, categoryOf, byCategory, upsertKey, removeCategory, withKeys } from './keys.js';
-import { scoreVotes, rankEntries, buildLeaderboard, outcome, medalTable, resultsFeed } from './scoring.js';
+import { scoreVotes, rankEntries, buildLeaderboard, outcome, medalTable, resultsFeed, announcedCount } from './scoring.js';
+import { winnersOf, toggleKey } from './keys.js';
 
 describe('keys', () => {
 	it('keeps the legacy nominee key format', () => {
@@ -57,10 +58,11 @@ describe('scoring', () => {
 	});
 
 	it('reports per-category outcome', () => {
-		expect(outcome({ a: 'a__1' }, { a: 'a__1' }, 'a')).toBe('correct');
-		expect(outcome({ a: 'a__2' }, { a: 'a__1' }, 'a')).toBe('missed');
+		expect(outcome({ a: 'a__1' }, { a: ['a__1'] }, 'a')).toBe('correct');
+		expect(outcome({ a: 'a__2' }, { a: ['a__1'] }, 'a')).toBe('missed');
+		expect(outcome({ a: 'a__2' }, { a: ['a__1', 'a__2'] }, 'a')).toBe('correct');
 		expect(outcome({ a: 'a__2' }, {}, 'a')).toBe('pending');
-		expect(outcome({}, { a: 'a__1' }, 'a')).toBe('none');
+		expect(outcome({}, { a: ['a__1'] }, 'a')).toBe('none');
 		expect(outcome({}, {}, 'a')).toBe('empty');
 	});
 
@@ -77,5 +79,35 @@ describe('scoring', () => {
 		const cats = withKeys([{ id: 'a', name: 'Best A', candidates: [{ text: 'One' }, { text: 'Two' }] }]);
 		const feed = resultsFeed(cats, { u1: { votes: ['a__one'] }, u2: { votes: ['a__two'] } }, ['a__one']);
 		expect(feed[0]).toMatchObject({ category: 'Best A', winner: 'One', correct: 1, total: 2 });
+	});
+});
+
+describe('category ties', () => {
+	const results = ['a__1', 'b__1', 'b__2'];
+
+	it('groups winners by category', () => {
+		expect(winnersOf(results)).toEqual({ a: ['a__1'], b: ['b__1', 'b__2'] });
+		expect(winnersOf(['a__1', 'a__1'])).toEqual({ a: ['a__1'] });
+		expect(announcedCount(results)).toBe(2);
+	});
+
+	it('gives one point for picking either tied winner, never two', () => {
+		expect(scoreVotes(['a__1', 'b__2'], results)).toBe(2);
+		expect(scoreVotes(['a__2', 'b__1'], results)).toBe(1);
+		// A malformed ballot with both tied nominees still only scores once.
+		expect(scoreVotes(['b__1', 'b__2'], results)).toBe(1);
+	});
+
+	it('shows a tie as one feed entry', () => {
+		const cats = [{ id: 'b', name: 'Best B', candidates: [{ text: 'One', key: 'b__1' }, { text: 'Two', key: 'b__2' }] }];
+		const ballots = { u1: { votes: ['b__1'] }, u2: { votes: ['b__2'] }, u3: { votes: ['b__3'] } };
+		const feed = resultsFeed(cats, ballots, results);
+		expect(feed).toHaveLength(2);
+		expect(feed[0]).toMatchObject({ key: 'b', keys: ['b__1', 'b__2'], tie: true, winner: 'One & Two', correct: 2, total: 3 });
+	});
+
+	it('toggles a winner without touching the rest of the category', () => {
+		expect(toggleKey(['a__1', 'b__1'], 'b__2')).toEqual(['a__1', 'b__1', 'b__2']);
+		expect(toggleKey(['a__1', 'b__1', 'b__2'], 'b__1')).toEqual(['a__1', 'b__2']);
 	});
 });

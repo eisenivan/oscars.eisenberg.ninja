@@ -3,7 +3,7 @@
 	import { activeYear } from '$lib/data/year.js';
 	import { settingsFor, categoriesFor, ballotFor, currentYear } from '$lib/data/queries.js';
 	import { connected } from '$lib/data/db.js';
-	import { categoryOf } from '$lib/domain/keys.js';
+	import { categoryOf, winnersOf } from '$lib/domain/keys.js';
 	import Icon from '../ui/Icon.svelte';
 
 	$: year = $activeYear;
@@ -13,10 +13,13 @@
 
 	$: total = $cats.value.length;
 	$: picked = new Set((($mine && $mine.value?.votes) || []).filter(Boolean).map(categoryOf)).size;
-	$: announced = $settings.results.length;
-	$: latestKey = $settings.results[announced - 1];
+	$: winners = winnersOf($settings.results);
+	$: announced = Object.keys(winners).length;
+	$: latestKey = $settings.results[$settings.results.length - 1];
 	$: latestCat = $cats.value.find((c) => c.id === categoryOf(latestKey));
-	$: latest = latestCat?.candidates.find((c) => c.key === latestKey);
+	$: latest = latestCat && {
+		text: winners[latestCat.id].map((k) => latestCat.candidates.find((c) => c.key === k)?.text).filter(Boolean).join(' & ')
+	};
 	$: firstEmpty = $cats.value.find(
 		(c) => !(($mine && $mine.value?.votes) || []).some((k) => k && categoryOf(k) === c.id)
 	);

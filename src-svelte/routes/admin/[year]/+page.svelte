@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/auth.js';
 	import { settingsFor, categoriesFor, saveResults, saveLocked, isAdmin } from '$lib/data/queries.js';
-	import { byCategory, upsertKey, removeCategory } from '$lib/domain/keys.js';
+	import { winnersOf, upsertKey, removeCategory, toggleKey, categoryOf } from '$lib/domain/keys.js';
 	import { toast, haptic } from '$lib/stores/toast.js';
 	import Sheet from '$lib/components/ui/Sheet.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -22,26 +22,32 @@
 	});
 
 	$: results = $settings.results;
-	$: winners = byCategory(results);
+	$: winners = winnersOf(results);
 	$: categories = $cats.value;
 	$: pending = categories.filter((c) => !winners[c.id]);
-	$: announced = [...results].reverse().map((k) => categories.find((c) => winners[c.id] === k)).filter(Boolean);
+	// Most recently announced first; a tie shows once.
+	$: announced = [...new Set([...results].reverse().map(categoryOf))].map((id) => categories.find((c) => c.id === id)).filter(Boolean);
+	const names = (cat, keys = []) => keys.map((k) => cat.candidates.find((x) => x.key === k)?.text).filter(Boolean).join(' & ');
 	$: next = pending[0];
 
 	let sheetCat = null;
 	let sheetOpen = false;
 	let confirmLock = false;
 	let busy = false;
-	const openCat = (c) => ((sheetCat = c), (sheetOpen = true));
+	let tieMode = false;
+	const openCat = (c) => ((sheetCat = c), (tieMode = (winners[c.id] || []).length > 1), (sheetOpen = true));
 
+	/** Normal tap: this nominee is the winner. Tie mode: add/remove it as a co-winner. */
 	async function setWinner(cat, key) {
 		haptic(15);
 		const before = results;
-		sheetOpen = false;
+		const updated = tieMode ? toggleKey(results, key) : upsertKey(results, key);
+		if (!tieMode) sheetOpen = false;
 		try {
-			await saveResults(year, upsertKey(results, key));
-			const name = cat.candidates.find((c) => c.key === key)?.text;
-			toast(`${cat.short}: ${name}`, {
+			await saveResults(year, updated);
+			const now = winnersOf(updated)[cat.id] || [];
+			const label = now.length ? `${names(cat, now)}${now.length > 1 ? ' (tie)' : ''}` : 'cleared';
+			toast(`${cat.short}: ${label}`, {
 				tone: 'gold',
 				timeout: 6000,
 				action: { label: 'Undo', run: () => saveResults(year, before) }
@@ -107,7 +113,7 @@
 			<button on:click={() => openCat(next)} class="mb-6 flex w-full items-center gap-4 rounded-md bg-gold-fill p-4 text-left text-on-gold shadow-lift transition active:scale-[.99] sm:p-5">
 				<Icon name="trophy" size={26} />
 				<span class="flex-1">
-					<span class="block text-xs font-bold uppercase tracking-[0.14em] opacity-70">Next up · {results.length + 1} of {categories.length}</span>
+					<span class="block text-xs font-bold uppercase tracking-[0.14em] opacity-70">Next up · {announced.length + 1} of {categories.length}</span>
 					<span class="block font-display text-xl font-semibold">{next.name}</span>
 				</span>
 				<Icon name="chevron-right" size={22} />
@@ -136,7 +142,7 @@
 								<Icon name="trophy" size={16} class="text-gold" />
 								<span class="min-w-0 flex-1">
 									<span class="block text-xs text-muted">{c.short}</span>
-									<span class="block truncate font-semibold">{c.candidates.find((x) => x.key === winners[c.id])?.text}</span>
+									<span class="block truncate font-semibold">{names(c, winners[c.id])}{#if winners[c.id]?.length > 1}<span class="ml-1.5 text-xs font-medium text-gold">Tie</span>{/if}</span>
 								</span>
 							</button>
 						</li>
@@ -151,10 +157,24 @@
 
 <Sheet bind:open={sheetOpen} title={sheetCat?.name || ''}>
 	{#if sheetCat}
-		<p class="mb-3 text-sm text-muted">Tap the winner.</p>
+		<div class="mb-3 flex items-center justify-between gap-3">
+			<p class="text-sm text-muted">{tieMode ? 'Tap every winner. Tap again to remove.' : 'Tap the winner.'}</p>
+			<label class="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-medium">
+				Tie
+				<button
+					role="switch"
+					aria-checked={tieMode}
+					aria-label="Tie: more than one winner"
+					on:click={() => (tieMode = !tieMode)}
+					class="relative h-7 w-12 rounded-full transition {tieMode ? 'bg-gold-fill' : 'bg-line'}"
+				>
+					<span class="absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all {tieMode ? 'left-6' : 'left-1'}" />
+				</button>
+			</label>
+		</div>
 		<ul class="space-y-2">
 			{#each sheetCat.candidates as c (c.key)}
-				{@const won = winners[sheetCat.id] === c.key}
+				{@const won = (winners[sheetCat.id] || []).includes(c.key)}
 				<li>
 					<button
 						on:click={() => setWinner(sheetCat, c.key)}

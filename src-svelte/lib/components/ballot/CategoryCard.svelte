@@ -10,7 +10,7 @@
 	export let cat;
 	export let index = 0;
 	export let pick = undefined; // selected key
-	export let winner = undefined; // winning key
+	export let winners = []; // winning key(s); more than one for a tie
 	export let editable = false;
 	export let saveState = null; // saving | saved | error
 	export let pickLabel = 'Your pick';
@@ -19,10 +19,11 @@
 	const dispatch = createEventDispatcher();
 	let expanded = false;
 
-	$: outcome = !winner ? (pick ? 'pending' : null) : !pick ? 'none' : pick === winner ? 'correct' : 'missed';
+	$: won = winners || [];
+	$: outcome = !won.length ? (pick ? 'pending' : null) : !pick ? 'none' : won.includes(pick) ? 'correct' : 'missed';
 	$: visible = editable || expanded
 		? cat.candidates
-		: cat.candidates.filter((c) => c.key === pick || c.key === winner);
+		: cat.candidates.filter((c) => c.key === pick || won.includes(c.key));
 	$: hidden = cat.candidates.length - visible.length;
 </script>
 
@@ -57,6 +58,9 @@
 			</div>
 		</div>
 		<h2 class="mt-1 text-[19px] font-semibold leading-tight sm:text-xl" id="h-{cat.id}">{cat.name}</h2>
+		{#if won.length > 1}
+			<p class="mt-1 flex items-center gap-1 text-[13px] font-medium text-gold"><Icon name="trophy" size={13} /> Tie · {won.length} winners</p>
+		{/if}
 	</div>
 
 	{#if editable}
@@ -76,12 +80,12 @@
 				<NomineeRow
 					{candidate}
 					isPick={candidate.key === pick}
-					isWinner={candidate.key === winner}
+					isWinner={won.includes(candidate.key)}
 					{outcome}
 					{pickLabel}
 				/>
 			{/each}
-			{#if !pick && !winner && !expanded}
+			{#if !pick && !won.length && !expanded}
 				<p class="px-3.5 py-2 text-sm italic text-muted">{hasBallot ? 'No pick in this category' : 'No ballot submitted'}</p>
 			{/if}
 		</div>

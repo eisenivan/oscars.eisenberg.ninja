@@ -25,6 +25,26 @@ export function byCategory(keys = []) {
 	return map;
 }
 
+/**
+ * Results -> { [categoryId]: [winningKey, ...] }. Usually one winner, but
+ * the Academy occasionally declares a tie, stored as two keys for the
+ * same category.
+ */
+export function winnersOf(results = []) {
+	const map = {};
+	for (const key of results || []) {
+		const cat = categoryOf(key);
+		if (cat && !(map[cat] ||= []).includes(key)) map[cat].push(key);
+	}
+	return map;
+}
+
+/** Add a key if missing, remove it if present. Other keys are untouched. */
+export function toggleKey(keys = [], key) {
+	const list = (keys || []).filter(Boolean);
+	return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
+}
+
 /** Replace (or add) the pick for the key's category. Returns a new array. */
 export function upsertKey(keys = [], key) {
 	const cat = categoryOf(key);

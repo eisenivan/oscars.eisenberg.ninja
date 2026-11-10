@@ -1,8 +1,8 @@
 <script>
 	import { user } from '$lib/auth.js';
 	import { settingsFor, categoriesFor, ballotsFor } from '$lib/data/queries.js';
-	import { byCategory } from '$lib/domain/keys.js';
-	import { buildLeaderboard } from '$lib/domain/scoring.js';
+	import { byCategory, winnersOf } from '$lib/domain/keys.js';
+	import { buildLeaderboard, announcedCount } from '$lib/domain/scoring.js';
 	import CategoryCard from '$lib/components/ballot/CategoryCard.svelte';
 	import BallotSkeleton from '$lib/components/ballot/BallotSkeleton.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -22,7 +22,8 @@
 	$: mineB = $ballots.value?.[$user.uid];
 	$: them = byCategory(theirs?.votes);
 	$: me = byCategory(mineB?.votes);
-	$: winners = byCategory($settings.results);
+	$: winners = winnersOf($settings.results);
+	$: announced = announcedCount($settings.results);
 	$: board = buildLeaderboard($ballots.value || {}, $settings.results);
 	$: row = board.find((r) => r.uid === uid);
 	$: name = theirs?.displayName || 'Ballot';
@@ -60,12 +61,12 @@
 	</EmptyState>
 {:else}
 	<header class="mb-6 flex flex-wrap items-center gap-4">
-		<Avatar name={name} size={56} medal={row && row.rank <= 3 && $settings.results.length ? row.rank : null} highlight={isMe} />
+		<Avatar name={name} size={56} medal={row && row.rank <= 3 && announced ? row.rank : null} highlight={isMe} />
 		<div class="min-w-0 flex-1">
 			<p class="label-caps">{year} ballot</p>
 			<h1 class="page-title mt-0.5 truncate">{isMe ? 'Your ballot' : name}</h1>
 		</div>
-		{#if row && $settings.results.length}
+		{#if row && announced}
 			<div class="flex gap-6 text-right">
 				<div>
 					<p class="tnum font-display text-3xl font-semibold leading-none text-gold">#{row.rank}</p>
@@ -73,7 +74,7 @@
 				</div>
 				<div>
 					<p class="tnum font-display text-3xl font-semibold leading-none">{row.score}</p>
-					<p class="mt-1 text-xs text-muted">of {$settings.results.length}</p>
+					<p class="mt-1 text-xs text-muted">of {announced}</p>
 				</div>
 			</div>
 		{/if}
@@ -95,7 +96,7 @@
 	{#if mode === 'theirs' || !canCompare}
 		<div class="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
 			{#each categories as cat, i (cat.id)}
-				<CategoryCard {cat} index={i} pick={them[cat.id]} winner={winners[cat.id]} pickLabel={isMe ? 'Your pick' : `${name.split(' ')[0]}’s pick`} />
+				<CategoryCard {cat} index={i} pick={them[cat.id]} winners={winners[cat.id]} pickLabel={isMe ? 'Your pick' : `${name.split(' ')[0]}’s pick`} />
 			{/each}
 		</div>
 	{:else if !shown.length}
@@ -109,15 +110,15 @@
 		</div>
 		<ul class="space-y-2.5">
 			{#each shown as cat (cat.id)}
-				{@const w = winners[cat.id]}
+				{@const w = winners[cat.id] || []}
 				{@const t = them[cat.id]}
 				{@const m = me[cat.id]}
 				{@const agree = t && t === m}
 				<li class="card p-4 md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4 md:px-5 {agree ? '' : 'border-l-4 border-l-info'}">
 					<div class="mb-2 flex items-center justify-between md:mb-0 md:block">
 						<p class="font-display text-[17px] font-semibold leading-tight">{cat.short}</p>
-						{#if w}
-							<p class="flex items-center gap-1 text-xs font-medium text-gold md:mt-1"><Icon name="trophy" size={13} /> {candidate(cat, w)?.text}</p>
+						{#if w.length}
+							<p class="flex items-center gap-1 text-xs font-medium text-gold md:mt-1"><Icon name="trophy" size={13} /> {w.map((k) => candidate(cat, k)?.text).join(' & ')}{w.length > 1 ? ' (tie)' : ''}</p>
 						{:else}
 							<p class="text-xs text-muted md:mt-1">Pending</p>
 						{/if}
@@ -126,14 +127,14 @@
 						<p class="flex items-center gap-2 text-[15px] md:col-span-2">
 							<span class="text-xs font-semibold uppercase tracking-wider text-muted">Both</span>
 							<span class="font-semibold">{candidate(cat, t)?.text}</span>
-							{#if w}<Icon name={t === w ? 'check' : 'x'} size={16} stroke={2.75} class={t === w ? 'text-success' : 'text-danger'} />{/if}
+							{#if w.length}<Icon name={w.includes(t) ? 'check' : 'x'} size={16} stroke={2.75} class={w.includes(t) ? 'text-success' : 'text-danger'} />{/if}
 						</p>
 					{:else}
 						{#each [[name.split(' ')[0], t], ['You', m]] as [who, key], j}
 							<p class="flex items-center gap-2 py-0.5 text-[15px]">
 								<span class="w-14 shrink-0 truncate text-xs font-semibold uppercase tracking-wider text-muted md:hidden">{who}</span>
 								<span class="truncate {key ? 'font-semibold' : 'italic text-muted'} {j === 1 ? 'text-info' : ''}">{key ? candidate(cat, key)?.text : 'No pick'}</span>
-								{#if w && key}<Icon name={key === w ? 'check' : 'x'} size={16} stroke={2.75} class={key === w ? 'text-success' : 'text-danger'} />{/if}
+								{#if w.length && key}<Icon name={w.includes(key) ? 'check' : 'x'} size={16} stroke={2.75} class={w.includes(key) ? 'text-success' : 'text-danger'} />{/if}
 							</p>
 						{/each}
 					{/if}
